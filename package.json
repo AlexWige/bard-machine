@@ -7,7 +7,7 @@
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "electron .",
-    "distrib": "electron-packager / BardMachine --platform=win32 --arch=x86_64"
+    "distrib": "electron-packager ./ bardmachine --platform=win32 --out=release-builds --arch=x64 --icon=./icon.ico --overwrite"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
