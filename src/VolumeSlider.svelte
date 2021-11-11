@@ -4,7 +4,7 @@
 
     export let volume = 0.65;
     export let mainColor;
-    export let isActive = false;
+    export let isPlaying = false;
 
     let bar;
     let knob;
@@ -12,8 +12,9 @@
 
     $: iconClass = getVolumeIconClass(volume);
 
-    $: style = `--mainColor: ${mainColor.hex()};`
-        + `--knobColor: ${mainColor.mix(Color('white'), 0.65).hex()}`;
+    $: style = `--barColor: ${isPlaying ? mainColor.mix(Color('white'), 0.7).hex() : mainColor.hex()};`
+        + `--knobColor: ${isPlaying ? Color('white') : mainColor.mix(Color('white'), 0.65).hex()};`
+        + `--iconColor: ${isPlaying ? Color('white') : mainColor.hex()}`;
 
     function getVolumeIconClass(vol) {
         if(vol < 0.1) return 'mute';
@@ -49,9 +50,9 @@
 </script>
 
 
-<div class="volume-slider" style="{style}" class:active={isActive}>
+<div class="volume-slider" style="{style}">
     <i class="volume-icon {iconClass}"></i>
-    <div class="bar" bind:this={bar} on:pointerdown={onKnobPointerMove}>
+    <div class="bar" bind:this={bar} on:pointerdown={onKnobPointerDown}>
         <div class="active-volume" bind:this={activeBar}></div>
         <div class="volume-btn" bind:this={knob}
             on:pointerdown={onKnobPointerDown}
@@ -74,7 +75,8 @@
                 font-size: 20px;
                 font-style: normal;
                 font-weight: normal;
-                color: var(--mainColor, #fff);
+                color: var(--iconColor, #fff);
+                text-shadow: none;
             }
         
             &.mute::before {
@@ -103,7 +105,7 @@
                 top: 0;
                 bottom: 0;
                 width: 60%;
-                background-color: var(--mainColor, #ccc);
+                background-color: var(--barColor, #ccc);
             }
         
             .volume-btn {
@@ -111,22 +113,17 @@
                 display: block;
                 position: absolute;
                 left: 60%;
-                margin-left: -7px;
-                width: 15px;
+                margin-left: -9px;
+                width: 18px;
                 top: -7px;
                 height: 22px;
-                border-radius: 2px;
+                border-radius: 4px;
                 cursor: pointer;
-                transition: 0.05s;
+                transition: 0;
                 background-color: var(--knobColor, #fff);
         
                 &:hover {
                     transform: scale(1.1);
-                }
-        
-                &:active {
-                    transition: 0s;
-                    transform: scale(1.2);
                 }
             }
         }    

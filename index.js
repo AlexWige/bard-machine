@@ -3,14 +3,17 @@ const path = require("path");
 
 app.on("ready", () => {
     const window = new BrowserWindow({ 
-        width: 800, 
-        height: 600, 
+        width: 1200, 
+        height: 700,
+        minWidth: 400,
+        minHeight: 200,
         frame: false,
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false,
             enableRemoteModule: true
-        }
+        },
+        icon: __dirname + '/icon.ico'
     });
     window.loadFile(path.join(__dirname, "public/index.html"));
     

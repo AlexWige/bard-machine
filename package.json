@@ -6,12 +6,14 @@
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "electron ."
+    "start": "electron .",
+    "distrib": "electron-packager / BardMachine --platform=win32 --arch=x86_64"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",
     "@rollup/plugin-node-resolve": "^11.0.0",
     "electron": "^13.6.1",
+    "electron-packager": "^15.4.0",
     "electron-reloader": "^1.2.1",
     "node-sass": "^6.0.1",
     "rollup": "^2.3.4",

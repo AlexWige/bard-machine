@@ -4,16 +4,22 @@
     import GlobalColors from './GlobalColors';
     import Color from 'color';
     
-    export let blockType;
-    export let title;
-
+    export let blockType = "music";
+    export let title = "Untitled";
     export let isPlaying = false;
+    export let inputPrompt;
+    export let assignedKey = 63;
+
+    export const keyAPI = {
+        setKey: (key) => assignedKey = key,
+        getKey: () => { return assignedKey }
+    }
 
     $: mainColor = getMainColor(blockType);
 
     $: style = `--mainColor: ${mainColor.hex()};`
-        + `--mainBoxBG: ${GlobalColors.bg.lighten(0.5).hex()};`
-        + `--assignButtonBorder: ${GlobalColors.bg.lighten(1.65).hex()};`;
+        + `--mainBoxBG: ${isPlaying ? mainColor.hex() : GlobalColors.bg.lighten(0.5).hex()};`
+        + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : GlobalColors.bg.lighten(1.65).hex()};`;
 
     function getMainColor(blockType) {
         switch (blockType) {
@@ -27,18 +33,18 @@
 
 <div class="sound-block {blockType}" style="{style}">
     <div class="main-box">
-        <div class="info-zone">
+        <div class="info-zone" class:active={isPlaying}>
             <i class="category-icon"></i>
             <div class="info-bar">
                 {title ?? ""}
             </div>
             <div class="volume">
-                <VolumeSlider mainColor={mainColor} isActive={isPlaying}></VolumeSlider>
+                <VolumeSlider mainColor={mainColor} isPlaying={isPlaying}></VolumeSlider>
             </div>
         </div>       
-        <div class="assign-btn"></div>         
+        <div class="assign-btn" on:pointerdown={() => inputPrompt.show(keyAPI)}></div>         
     </div>
-    <PlayButton mainColor={mainColor}/>
+    <PlayButton mainColor={mainColor} onPressed={(p) => isPlaying = p}/>
 </div>
 
 <style lang="scss">
@@ -63,8 +69,8 @@
 
         font-family: 'Poppins', sans-serif;
         position: relative;
-        margin: 20px 0;
-        height: 65px;
+        margin: 19px 0;
+        height: 60px;
         width: 100%;
         font-weight: 400;
 
@@ -95,10 +101,10 @@
 
             .assign-btn {
                 position: absolute;
-                height: 42px;
-                width: 42px;
+                height: 40px;
+                width: 40px;
                 right: 14px;
-                top: 12px;
+                top: 10px;
                 box-sizing: border-box;
                 border: 4px solid var(--assignButtonBorder, #555);
                 border-radius: 8px;
@@ -127,10 +133,17 @@
 
             .info-zone {
                 position: absolute;
-                top: 8px;            
+                top: 5px;            
                 left: 44px;
                 bottom: 8px;
                 right: 73px;
+                font-weight: 400;
+                text-shadow: 0 0.5px 6px #00000044;
+                user-select: none;
+                
+                &.active {
+                    font-weight: 500;
+                }
 
                 .info-bar {
                     position: absolute;
@@ -138,7 +151,7 @@
                     left: 0px;
                     right: 0px;
                     height: 24px;
-                    font-size: 15px;
+                    font-size: 14px;
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;

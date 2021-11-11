@@ -1,25 +1,34 @@
 <script>
+import Color from "color";
+
     import GlobalColors from "./GlobalColors";
 
     export let isPlaying = false;
     export let mainColor;
-    $: style = `--mainColor: ${mainColor.hex()};`
-        + `--iconColor: ${mainColor.mix(GlobalColors.bg, 0.62).hex()};`;
+    export let onPressed;
 
-    function onClick() {
+    $: style = `--mainColor: ${isPlaying ? 'white' : mainColor.hex()};`
+        + `--iconColor: ${getIconColor()};`;
+
+    function getIconColor() {
+        if(!isPlaying) return mainColor.mix(GlobalColors.bg, 0.62).hex();
+        else return Color('white').mix(GlobalColors.bg, 0.7).hex();
+    }
+
+    function onPointerDown() {
         isPlaying = !isPlaying;
-        console.log(isPlaying);
+        onPressed(isPlaying);
     }
 </script>
 
-<div class="play-button" style="{style}" on:click="{onClick}">
+<div class="play-button" style="{style}" on:pointerdown="{onPointerDown}">
     <i class="{isPlaying ? 'icon-stop2' : 'icon-play3'}"></i>
 </div>
 
 <style lang="scss">
     @import './fonts.scss';
 
-    $size: 72px;
+    $size: 67px;
 
     .play-button {
         position: absolute;
@@ -31,13 +40,13 @@
         transition: 0.1s;
         box-sizing: border-box;
         text-align: center;
-        padding-top: 17px;
+        padding-top: 16px;
         transition: transform 0.2s background-color 0.1s;
         background-color: var(--mainColor, #ccc);
         color: var(--iconColor, #333);
 
         i {
-            font-size: 38px;
+            font-size: 35px;
 
             &.icon-play3 {
                 margin-left: 8px;

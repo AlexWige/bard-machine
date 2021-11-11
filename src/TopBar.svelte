@@ -36,7 +36,7 @@ onMount(async () => {
 
 <style lang="scss">
     #top-bar {
-        $top-bar-height: 22px;
+        $top-bar-height: 24px;
 
         position: fixed;
         top: 0;
