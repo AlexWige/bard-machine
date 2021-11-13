@@ -1,10 +1,12 @@
 <script>
     import Color from "color";
+import { afterUpdate, onMount } from "svelte";
     import GlobalColors from "./GlobalColors";
 
-    export let volume = 0.65;
+    export let volume;
     export let mainColor;
     export let isPlaying = false;
+    export let onChange = (v) => {};
 
     let bar;
     let knob;
@@ -15,6 +17,10 @@
     $: style = `--barColor: ${isPlaying ? mainColor.mix(Color('white'), 0.7).hex() : mainColor.hex()};`
         + `--knobColor: ${isPlaying ? Color('white') : mainColor.mix(Color('white'), 0.65).hex()};`
         + `--iconColor: ${isPlaying ? Color('white') : mainColor.hex()}`;
+
+    onMount(async() => {
+        moveKnob(volume);
+    });
 
     function getVolumeIconClass(vol) {
         if(vol < 0.1) return 'mute';
@@ -41,11 +47,10 @@
     }
 
     function moveKnob(vol) {
-        if(vol !== volume) {
-            activeBar.style.width = vol * 100 + '%';
-            knob.style.left = (vol * 100) + '%';
-            volume = vol;
-        }    
+        activeBar.style.width = vol * 100 + '%';
+        knob.style.left = (vol * 100) + '%';
+        volume = vol;
+        onChange(vol);
     }
 </script>
 

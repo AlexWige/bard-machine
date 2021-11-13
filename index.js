@@ -1,5 +1,7 @@
-const { remote, app, BrowserWindow, ipcMain } = require("electron");
+const { remote, app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
+
+let dialogOpened = false;
 
 app.on("ready", () => {
     const window = new BrowserWindow({ 
@@ -15,7 +17,9 @@ app.on("ready", () => {
         },
         icon: __dirname + '/icon.ico'
     });
+
     window.loadFile(path.join(__dirname, "public/index.html"));
+    window.webContents.openDevTools();
     
     updateMaximizeButton(window);
     
@@ -35,6 +39,24 @@ app.on("ready", () => {
     ipcMain.on('close-window', () => {
         window.close();
     });
+
+    ipcMain.on('open-file-dialog', (event) => {
+        if(dialogOpened) return;
+        dialogOpened = true;
+        // dialog.showOpenDialog({ title: 'Bard Machine Directory', properties: ['openDirectory']})
+        // .then((data) => {
+        //     dialogOpened = false;
+        //     if(data.canceled || data.filePaths.length <= 0) {
+        //         // app.quit();
+        //     } else {
+        //         event.sender.send('selected-directory', data.filePaths[0]);
+        //     }
+        // });
+        
+        
+        dialogOpened = false;
+        event.sender.send('selected-directory', 'D:/RPG/Bard Machine/BardMachineSounds/_Export');
+    })
 });
 
 function updateMaximizeButton(window) {

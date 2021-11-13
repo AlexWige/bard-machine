@@ -3,9 +3,10 @@ import Color from "color";
 
     import GlobalColors from "./GlobalColors";
 
-    export let isPlaying = false;
+    export let isPlaying;
     export let mainColor;
-    export let onPressed;
+    export let onPressed = null;
+    export let onRightClick = null;
 
     $: style = `--mainColor: ${isPlaying ? 'white' : mainColor.hex()};`
         + `--iconColor: ${getIconColor()};`;
@@ -15,9 +16,13 @@ import Color from "color";
         else return Color('white').mix(GlobalColors.bg, 0.7).hex();
     }
 
-    function onPointerDown() {
-        isPlaying = !isPlaying;
-        onPressed(isPlaying);
+    function onPointerDown(e) {
+        if(e.button == 0 || e.pointerType != 'mouse') {
+            if(onPressed) onPressed(!isPlaying);
+            isPlaying = !isPlaying;
+        } else if(e.button == 1 || e.pointerType == 'mouse') {
+            if(onRightClick) onRightClick();
+        }
     }
 </script>
 

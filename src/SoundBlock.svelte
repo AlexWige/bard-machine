@@ -3,23 +3,66 @@
     import VolumeSlider from './VolumeSlider.svelte';
     import GlobalColors from './GlobalColors';
     import Color from 'color';
+    import soundStore from './soundStore';
+    import { globalVolume } from './playerStore';
+    import _ from 'lodash';
+    import { onDestroy, onMount } from 'svelte';
+    import Fader from './Fader.svelte';
     
     export let blockType = "music";
-    export let title = "Untitled";
     export let isPlaying = false;
     export let inputPrompt;
-    export let assignedKey = 63;
+    export let soundData;
 
-    export const keyAPI = {
-        setKey: (key) => assignedKey = key,
-        getKey: () => { return assignedKey }
+    let fader;
+    let faderValue = 0;
+    let sound = new Audio(soundData.path);
+
+    let keyCode = 0;
+    let keyName = "";
+
+    const hotKeyAPI = {
+        getKeyCode: () => { return keyCode },
+        setKey: (code, name) => { keyCode = code; keyName = name; },
+        clearKeyCode: () => { keyCode = undefined; keyName = '';},
+        triggerSound: () => { 
+            if(soundData.category == 'sfx') {
+                isPlaying = true;
+                sound.currentTime = 0;
+            } else {
+                isPlaying = !isPlaying;
+            }
+        }
     }
-
+    
+    onMount(async () => {
+        sound.onended = () => {
+            if(soundData.category != 'sfx') sound.play();
+            else isPlaying = false;
+        };
+    });
+    
+    onDestroy(async() => {
+        fader.pause();
+    });
+    
     $: mainColor = getMainColor(blockType);
 
+    $: displayedKey = keyName;
+    
     $: style = `--mainColor: ${mainColor.hex()};`
-        + `--mainBoxBG: ${isPlaying ? mainColor.hex() : GlobalColors.bg.lighten(0.5).hex()};`
-        + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : GlobalColors.bg.lighten(1.65).hex()};`;
+    + `--mainBoxBG: ${isPlaying ? mainColor.hex() : GlobalColors.bg.lighten(0.5).hex()};`
+    + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : GlobalColors.bg.lighten(1.65).hex()};`;
+
+    $: sound.volume = soundData.volume * $globalVolume * faderValue;
+
+    $: onPlayingStateChange(isPlaying);
+
+    const playingSoundToken = {
+        isPlaying: () => { return isPlaying },
+        category: () => { return soundData.category },
+        setPlaying: (s) => { isPlaying = s; }
+    }
 
     function getMainColor(blockType) {
         switch (blockType) {
@@ -29,6 +72,35 @@
             default: return Color('#333');
         }
     }
+
+    function onPlayButtonRightClick() {
+        sound.currentTime = 0;
+    }
+
+    function onPlayingStateChange(play) {
+        if(play) {
+            if(soundData.category == 'sfx') {
+                sound.currentTime = 0;
+            }
+            if(soundData.category == 'music') {
+                soundStore.stopAllInCategory('music');
+            }
+            soundStore.addPlayingSound(playingSoundToken);
+            fader.start(1.0);
+            if(soundData.category == 'sfx') fader.skip();
+            sound.play();
+        }
+        else {
+            soundStore.removePlayingSound(playingSoundToken);
+            if(fader) fader.start(0.0);
+        }
+    }
+
+    function onFaderEnd() {
+        if(faderValue <= 0) {
+            sound.pause();
+        }
+    }
 </script>
 
 <div class="sound-block {blockType}" style="{style}">
@@ -36,15 +108,16 @@
         <div class="info-zone" class:active={isPlaying}>
             <i class="category-icon"></i>
             <div class="info-bar">
-                {title ?? ""}
+                {soundData.title ?? ""}
             </div>
             <div class="volume">
-                <VolumeSlider mainColor={mainColor} isPlaying={isPlaying}></VolumeSlider>
+                <VolumeSlider mainColor={mainColor} bind:isPlaying={isPlaying} bind:volume={soundData.volume}></VolumeSlider>
             </div>
         </div>       
-        <div class="assign-btn" on:pointerdown={() => inputPrompt.show(keyAPI)}></div>         
+        <div class="assign-btn" on:pointerdown={() => inputPrompt.show(hotKeyAPI)}>{displayedKey}</div>         
     </div>
-    <PlayButton mainColor={mainColor} onPressed={(p) => isPlaying = p}/>
+    <PlayButton mainColor={mainColor} bind:isPlaying={isPlaying} onRightClick={onPlayButtonRightClick}/>
+    <Fader bind:this={fader} bind:value={faderValue} onEnd={onFaderEnd}/>
 </div>
 
 <style lang="scss">

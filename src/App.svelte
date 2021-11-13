@@ -4,11 +4,31 @@
     import SoundBlock from "./SoundBlock.svelte";
     import GlobalColors from "./GlobalColors";
     import InputPrompt from "./InputPrompt.svelte";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount, tick } from "svelte";
+    const { ipcRenderer } = window.require('electron');
+    import fileLoader from "./fileLoader";
+    import soundStore from "./soundStore";
 
     let inputPrompt;
 
     $: style = `--bg: ${GlobalColors.bg};`
+    ipcRenderer.send('open-file-dialog');
+
+    onMount(async () => {
+        ipcRenderer.on('selected-directory', (event, path) => onFolderLoaded(path));
+    })
+
+    onDestroy(async () => {
+        ipcRenderer.removeListener('selected-directory', (event, path) => onFolderLoaded(path))
+    });
+
+    function onFolderLoaded(path) {
+        fileLoader.getFilePaths(path, data => {
+            fileLoader.createSoundDatas(data, 'music');
+            fileLoader.createSoundDatas(data, 'ambient');
+            fileLoader.createSoundDatas(data, 'sfx');
+        });
+    }
 </script>
 
 <main style={style}>
@@ -18,17 +38,17 @@
             <div class="category music">
                 <h2>Music</h2>
                 <div class="sound-box-container">
-                    <SoundBlock blockType="music" title="Titre de la musique" inputPrompt={inputPrompt}/>
-                    <SoundBlock blockType="music" title="Titre de la musique" inputPrompt={inputPrompt}/>
-                    <SoundBlock blockType="music" title="Titre de la musique" inputPrompt={inputPrompt}/>
+                    {#each $soundStore.music.sounds as sound}
+                        <SoundBlock blockType="music" bind:soundData={sound} inputPrompt={inputPrompt}/>
+                    {/each}
                 </div>
             </div>
             <div class="category ambient">
                 <h2>Ambient</h2>
                 <div class="sound-box-container">
-                    <SoundBlock blockType="ambient" title="Titre de l'ambiance"/>
-                    <SoundBlock blockType="ambient" title="Titre de l'ambiance"/>
-                    <SoundBlock blockType="ambient" title="Titre de l'ambiance"/>
+                    {#each $soundStore.ambient.sounds as sound}
+                        <SoundBlock blockType="ambient" bind:soundData={sound} inputPrompt={inputPrompt}/>
+                    {/each}
                 </div>
             </div>
         </div>
@@ -36,9 +56,9 @@
             <div class="category sfx">
                 <h2>Effects</h2>
                 <div class="sound-box-container">
-                    <SoundBlock blockType="sfx" title="Titre de l'effet"/>
-                    <SoundBlock blockType="sfx" title="Titre de l'effet"/>
-                    <SoundBlock blockType="sfx" title="Titre de l'effet"/>
+                    {#each $soundStore.sfx.sounds as sound}
+                        <SoundBlock blockType="sfx" bind:soundData={sound} inputPrompt={inputPrompt}/>
+                    {/each}
                 </div>
             </div>
         </div>        

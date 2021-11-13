@@ -1,25 +1,70 @@
 <script>
     import GlobalColors from "./GlobalColors";
     import SoundBlock from "./SoundBlock.svelte";
+    import { hotKeys, isPromptActive } from "./hotkeyStore";
+    import { onDestroy, onMount } from "svelte";
 
-    export let isVisible = false;
-    export let currentKeyAPI;
+    $: isActive = $isPromptActive;
+    let currentKeyAPI;
 
     $: style = `--bgCache: ${GlobalColors.bg.darken(0.5).fade(0.1).rgb()};`
         + `--boxBg: ${GlobalColors.bg.lighten(0.6).rgb()};`
-        + `--displayed: ${isVisible ? 'block' : 'none'};`;
+        + `--displayed: ${isActive ? 'block' : 'none'};`;
+
+    onMount(async () => {
+        window.addEventListener('keydown', onKeyDown);
+    });
+
+    onDestroy(async () => {
+        window.removeEventListener('keydown', onKeyDown);
+    });
     
     export function show(keyAPI) {
         currentKeyAPI = keyAPI;
-        currentKeyAPI.setKey(currentKeyAPI.getKey() + 1);
-        console.log(currentKeyAPI.getKey());
-        isVisible = true;
+        isActive = true;
+    }
+
+    export function hide() {
+        isActive = false;
+    }
+
+    function processKeyName(code, name) {
+        switch (code) {
+            case  8: return "←"; 
+            case 13: return "↵"; 
+            case 32: return "␣"; 
+            case 37: return "←"; 
+            case 38: return "↑"; 
+            case 39: return "→"; 
+            case 40: return "↓"; 
+            default: return name.toUpperCase();
+        }
+        
+    }
+
+    function onKeyDown(e) {
+        e.preventDefault();
+        let keyName = processKeyName(e.keyCode, e.key);
+
+        if(isActive) {
+            if(e.keyCode == 27) {
+                hide();
+                return;
+            }
+            if(e.keyCode == 144) return;
+            hotKeys.addHotKey(e.keyCode, keyName, currentKeyAPI);
+            hide();
+        } else {
+            const api = hotKeys.findAPI(e.keyCode);
+            if(api) api.triggerSound();
+        }
     }
     
     function unassignKey() {
-        if(currentKeyAPI) currentKeyAPI.setKey(undefined);
-        isVisible = false;
-        console.log(currentKeyAPI);
+        if(currentKeyAPI) {
+            hotKeys.removeHotKey(currentKeyAPI.getKeyCode());
+        }
+        hide();
     }
 </script>
 
@@ -31,7 +76,7 @@
         </div>
         <div class="prompt-options">
             <a id="input-prompt-delete" on:pointerdown={unassignKey}>Unassign</a>
-            <a id="input-prompt-cancel" on:pointerdown={() => { isVisible = false;}}>Go back</a>
+            <a id="input-prompt-cancel" on:pointerdown={hide}>Go back</a>
         </div>
     </div>
 </div>

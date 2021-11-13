@@ -2,15 +2,17 @@
     import VolumeSlider from './VolumeSlider.svelte';
     import Color from 'color';
     import GlobalColors from './GlobalColors';
+    import { globalVolume } from './playerStore';
+    import soundStore from './soundStore';
     
     $: style = `--barColor: ${GlobalColors.bg.lighten(0.9).hex()};`;
 </script>
 
 <div id="bottom-bar" style={style}>
     <div class="center-controls">
-        <i class="stop"></i>
+        <i class="stop" on:pointerdown="{soundStore.stopAll}"></i>
         <div class="volume">
-            <VolumeSlider mainColor={Color("#999")} volume=0.8 isPlaying={true}/>
+            <VolumeSlider mainColor={Color("#999")} bind:volume={$globalVolume} isPlaying={true}/>
         </div>
     </div>
 </div>
