@@ -30,19 +30,28 @@ import { afterUpdate, onMount } from "svelte";
     }
 
     function onKnobPointerDown(e) {
-        window.addEventListener('pointermove', onKnobPointerMove);
-        window.addEventListener('pointerup', onKnobPointerUp);
+        if(e.pointerType == "mouse") {
+            window.addEventListener('pointermove', onKnobPointerMove);
+            window.addEventListener('pointerup', onKnobPointerUp);
+        } else {
+            window.addEventListener('touchmove', onKnobPointerMove);
+            window.addEventListener('touchend', onKnobPointerUp);
+        }
     }
 
     function onKnobPointerUp(e) {
         window.removeEventListener('pointermove', onKnobPointerMove);
         window.removeEventListener('pointerup', onKnobPointerUp);
+        window.removeEventListener('touchmove', onKnobPointerMove);
+        window.removeEventListener('pointerup', onKnobPointerUp);
     }
 
     function onKnobPointerMove(e) {
+        let x = e.pointerType == 'mouse' ? e.clientX : e.touches[0].clientX;
         let rect = bar.getBoundingClientRect();
-        let ratio = (e.clientX - rect.left) / (rect.right - rect.left);
+        let ratio = (x - rect.left) / (rect.right - rect.left);
         ratio = Math.min(Math.max(ratio, 0), 1);
+        if(isNaN(ratio)) return;
         moveKnob(ratio);
     }
 
@@ -59,9 +68,7 @@ import { afterUpdate, onMount } from "svelte";
     <i class="volume-icon {iconClass}"></i>
     <div class="bar" bind:this={bar} on:pointerdown={onKnobPointerDown}>
         <div class="active-volume" bind:this={activeBar}></div>
-        <div class="volume-btn" bind:this={knob}
-            on:pointerdown={onKnobPointerDown}
-        ></div>
+        <div class="volume-btn" bind:this={knob} on:pointerdown={onKnobPointerDown}></div>
     </div>
 </div>
 

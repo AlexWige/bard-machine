@@ -43,7 +43,6 @@
     }
 
     function onKeyDown(e) {
-        e.preventDefault();
         let keyName = processKeyName(e.keyCode, e.key);
 
         if(isActive) {

@@ -19,7 +19,7 @@ app.on("ready", () => {
     });
 
     window.loadFile(path.join(__dirname, "public/index.html"));
-    window.webContents.openDevTools();
+    // window.webContents.openDevTools();
     
     updateMaximizeButton(window);
     
@@ -43,19 +43,17 @@ app.on("ready", () => {
     ipcMain.on('open-file-dialog', (event) => {
         if(dialogOpened) return;
         dialogOpened = true;
-        // dialog.showOpenDialog({ title: 'Bard Machine Directory', properties: ['openDirectory']})
-        // .then((data) => {
-        //     dialogOpened = false;
-        //     if(data.canceled || data.filePaths.length <= 0) {
-        //         // app.quit();
-        //     } else {
-        //         event.sender.send('selected-directory', data.filePaths[0]);
-        //     }
-        // });
-        
-        
-        dialogOpened = false;
-        event.sender.send('selected-directory', 'D:/RPG/Bard Machine/BardMachineSounds/_Export');
+        dialog.showOpenDialog({ title: 'Bard Machine Directory', properties: ['openDirectory']})
+        .then((data) => {
+            dialogOpened = false;
+            if(data.canceled || data.filePaths.length <= 0) {
+                app.quit();
+            } else {
+                event.sender.send('selected-directory', data.filePaths[0]);
+            }
+        });        
+        // dialogOpened = false;
+        // event.sender.send('selected-directory', 'D:/RPG/Bard Machine/BardMachineSounds/_Export');
     })
 });
 
