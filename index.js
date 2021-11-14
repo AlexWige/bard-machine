@@ -2,7 +2,7 @@ const { remote, app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 
 let dialogOpened = false;
-const dev = false;
+const dev = true;
 
 app.on("ready", () => {
     const window = new BrowserWindow({ 

@@ -12,8 +12,11 @@
     let inputPrompt;
 
     $: style = `--bg: ${GlobalStyles.bg};`
-            + `--topBarHeight: ${GlobalStyles.topBarSize};`;
-            
+            + `--topBarHeight: ${GlobalStyles.topBarSize};`
+            + `--musicColor: ${GlobalStyles.music};`
+            + `--ambientColor: ${GlobalStyles.ambient};`
+            + `--sfxColor: ${GlobalStyles.sfx};`;
+
     ipcRenderer.send('open-file-dialog');
 
     onMount(async () => {
@@ -38,7 +41,7 @@
     <div id="app">
         <div class="first-col">
             <div class="category music">
-                <h2>Music</h2>
+                <h2><i class="icon-font music-icon"></i>Music</h2>
                 <div class="sound-box-container">
                     {#each $soundStore.music.sounds as sound}
                         <SoundBlock blockType="music" bind:soundData={sound} inputPrompt={inputPrompt}/>
@@ -46,7 +49,7 @@
                 </div>
             </div>
             <div class="category ambient">
-                <h2>Ambient</h2>
+                <h2><i class="icon-font ambient-icon"></i>Ambient</h2>
                 <div class="sound-box-container">
                     {#each $soundStore.ambient.sounds as sound}
                         <SoundBlock blockType="ambient" bind:soundData={sound} inputPrompt={inputPrompt}/>
@@ -56,7 +59,7 @@
         </div>
         <div class="second-col">
             <div class="category sfx">
-                <h2>Effects</h2>
+                <h2><i class="icon-font sfx-icon"></i>Effects</h2>
                 <div class="sound-box-container">
                     {#each $soundStore.sfx.sounds as sound}
                         <SoundBlock blockType="sfx" bind:soundData={sound} inputPrompt={inputPrompt}/>
@@ -85,7 +88,7 @@
             left: 0;
             right: 0;
             padding: 0 5px;
-            bottom: 0;
+            bottom: 60px;
             box-sizing: border-box;
             overflow-y: auto;
             overflow-x: hidden;
@@ -114,13 +117,39 @@
             float: left;
             box-sizing: border-box;
             padding: 15px;
-            padding-bottom: 70px;
+            padding-bottom: 40px;
 
             h2 {
                 width: 100%;
-                margin-top: 5px;
+                margin-top: 10px;
+                margin-bottom: 12px;
                 text-align: center;
                 user-select: none;
+                font-size: 22px;
+
+                .icon-font::before {
+                    font-family: 'icomoon';
+                    font-style: normal;
+                    display: inline-block;
+                    margin-right: 12px;
+                    font-size: 26px;
+                    transform: translateY(3px);
+                }
+
+                .music-icon::before {
+                    content: '\e901';
+                    color: var(--musicColor, #fff);
+                }
+
+                .ambient-icon::before {
+                    content: '\e900';
+                    color: var(--ambientColor, #fff);
+                }
+
+                .sfx-icon::before {
+                    content: '\e902';
+                    color: var(--sfxColor, #fff);
+                }
             }
         }
 

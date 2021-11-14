@@ -129,6 +129,10 @@
         height: 52px;
         width: 100%;
 
+        &:first-of-type {
+            margin-top: 0;
+        }
+
         .main-box {
             position: absolute;
             top: 0;
@@ -138,6 +142,7 @@
             user-select: none;
             transition: box-shadow 0.15s;
             background-color: var(--mainBoxBG, #333);
+            border-radius: 2px;
 
             &:hover {
                 box-shadow: 0 0 10px transparentize(#000, 0.9);
@@ -158,7 +163,7 @@
                 right: 7px;
                 top: 6px;
                 box-sizing: border-box;
-                border: 4px solid var(--assignButtonBorder, #555);
+                border: 3px solid var(--assignButtonBorder, #555);
                 border-radius: 5px;
                 background-color: transparentize(#000, 0.8);
                 color: white;
@@ -214,7 +219,6 @@
 
             .main-box {
                 left: 0;
-                border-radius: 2px;
             }
 
             .assign-btn {
@@ -243,7 +247,7 @@
             .info-zone {
                 top: 0px;
                 bottom: 0;
-                right: 45px;
+                right: 43px;
                 left: 40px;
 
                 .info-bar {
