@@ -4,8 +4,6 @@
     const { ipcRenderer } = window.require('electron');
     let maximizedWindow = false;
 
-    
-
     $: style = `--barHeight: ${GlobalStyles.topBarSize};`;
 
     onMount(async () => {
@@ -16,26 +14,21 @@
         ipcRenderer.on('window-maximized', () => {
             maximizedWindow = true;
         });
-
-        document.getElementById("min-btn").addEventListener("click", function (e) {
-            ipcRenderer.send('minimize-window');
-        });
-
-        document.getElementById("max-btn").addEventListener("click", function (e) {
-            ipcRenderer.send('maximize-window');
-        });
-
-        document.getElementById("close-btn").addEventListener("click", function (e) {
-            ipcRenderer.send('close-window');
-        }); 
     });
 </script>
 
 <div id="top-bar" style={style}>
+    <img src="icon_grey_1.svg" id="icon" alt="icon"> <div id="title">Bard Machine</div>
     <div id="command-buttons">
-        <img src="top-bar/title-bar-btn-03-close.svg" alt="Close" class="button" id="close-btn">
-        <img src="top-bar/title-bar-btn-02{maximizedWindow ? 'b' : ''}-enlarge.svg" alt="Enlarge" class="button" id="max-btn">
-        <img src="top-bar/title-bar-btn-01-reduce.svg" alt="Reduce" class="button" id="min-btn">
+        <div class="button close" on:pointerup="{(e) => ipcRenderer.send('close-window')}" >
+            <img src="top-bar/title-bar-btn-03-close.svg" alt="Close window">
+        </div>
+        <div class="button" on:pointerup="{(e) => ipcRenderer.send('maximize-window')}" >
+            <img src="top-bar/title-bar-btn-02{maximizedWindow ? 'b' : ''}-enlarge.svg" alt="Maximize window">
+        </div>
+        <div class="button" on:pointerup="{(e) => ipcRenderer.send('minimize-window')}" >
+            <img src="top-bar/title-bar-btn-01-reduce.svg" alt="Minimize window">
+        </div>
     </div>
 </div>
 
@@ -49,6 +42,25 @@
         -webkit-user-select: none;
         -webkit-app-region: drag;
 
+        #title {
+            display: block;
+            position: absolute;
+            font-size: 12px;
+            top: 6px;
+            left: 40px;
+            bottom: 0;
+            color: #aaa;
+        }
+
+        #icon {
+            display: block;
+            position: absolute;
+            top: 4px;
+            left: 11px;
+            height: 20px;
+            opacity: 0.7;
+        }
+
         #command-buttons {
             color: white;
             position: absolute;
@@ -58,14 +70,30 @@
             width: 200px;
 
             .button {
+                position: relative;
+                box-sizing: border-box;
                 -webkit-app-region: no-drag;
                 float: right;
-                padding: 0 8px;
-                width: var(--barHeight, 25px);
+                padding: 3px 8px;
+                width: 38px;
+                height: var(--barHeight, 25px); 
+                overflow: hidden;
 
                 &:hover {
                     background-color: rgba(255, 255, 255, 0.2);
                     cursor: pointer;
+                }
+
+                &.close:hover {
+                    background-color: #ce2626;
+                }
+
+                img {
+                    position: relative;
+                    overflow: hidden;
+                    display: block;
+                    box-sizing: border-box;
+                    height: 22px;
                 }
             }
         }

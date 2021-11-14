@@ -122,7 +122,7 @@
             h2 {
                 width: 100%;
                 margin-top: 10px;
-                margin-bottom: 12px;
+                margin-bottom: 20px;
                 text-align: center;
                 user-select: none;
                 font-size: 22px;
