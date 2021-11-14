@@ -2,7 +2,7 @@ const { remote, app, BrowserWindow, ipcMain, dialog } = require("electron");
 const path = require("path");
 
 let dialogOpened = false;
-const dev = true;
+const dev = false;
 
 app.on("ready", () => {
     const window = new BrowserWindow({ 
@@ -42,11 +42,6 @@ app.on("ready", () => {
     });
 
     ipcMain.on('open-file-dialog', (event) => {
-        if(dev) {
-            dialogOpened = false;
-            event.sender.send('selected-directory', 'D:/RPG/Bard Machine/BardMachineSounds/_Export');
-            return;
-        }
 
         if(dialogOpened) return;
         dialogOpened = true;

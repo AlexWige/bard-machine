@@ -1,31 +1,13 @@
 <script>
     import TopBar from "./TopBar.svelte";
-    import BottomBar from "./BottomBar.svelte";
-    import SoundBlock from "./SoundBlock.svelte";
     import GlobalStyles from "./GlobalStyles";
-    import InputPrompt from "./InputPrompt.svelte";
-    import { onDestroy, onMount, tick } from "svelte";
-    const { ipcRenderer } = window.require('electron');
+    import SoundListView from "./SoundListView.svelte";
+    import HomeScreen from "./HomeScreen.svelte";
     import fileLoader from "./fileLoader";
-    import soundStore from "./soundStore";
 
-    let inputPrompt;
+    $: style = `--bg: ${GlobalStyles.bg};`;
 
-    $: style = `--bg: ${GlobalStyles.bg};`
-            + `--topBarHeight: ${GlobalStyles.topBarSize};`
-            + `--musicColor: ${GlobalStyles.music};`
-            + `--ambientColor: ${GlobalStyles.ambient};`
-            + `--sfxColor: ${GlobalStyles.sfx};`;
-
-    ipcRenderer.send('open-file-dialog');
-
-    onMount(async () => {
-        ipcRenderer.on('selected-directory', (event, path) => onFolderLoaded(path));
-    })
-
-    onDestroy(async () => {
-        ipcRenderer.removeListener('selected-directory', (event, path) => onFolderLoaded(path))
-    });
+    let homeScreen = true;
 
     function onFolderLoaded(path) {
         fileLoader.getFilePaths(path, data => {
@@ -33,43 +15,18 @@
             fileLoader.createSoundDatas(data, 'ambient');
             fileLoader.createSoundDatas(data, 'sfx');
         });
+        homeScreen = false;
     }
+    
 </script>
 
 <main style={style}>
     <TopBar/>
-    <div id="app">
-        <div class="first-col">
-            <div class="category music">
-                <h2><i class="icon-font music-icon"></i>Music</h2>
-                <div class="sound-box-container">
-                    {#each $soundStore.music.sounds as sound}
-                        <SoundBlock blockType="music" bind:soundData={sound} inputPrompt={inputPrompt}/>
-                    {/each}
-                </div>
-            </div>
-            <div class="category ambient">
-                <h2><i class="icon-font ambient-icon"></i>Ambient</h2>
-                <div class="sound-box-container">
-                    {#each $soundStore.ambient.sounds as sound}
-                        <SoundBlock blockType="ambient" bind:soundData={sound} inputPrompt={inputPrompt}/>
-                    {/each}
-                </div>
-            </div>
-        </div>
-        <div class="second-col">
-            <div class="category sfx">
-                <h2><i class="icon-font sfx-icon"></i>Effects</h2>
-                <div class="sound-box-container">
-                    {#each $soundStore.sfx.sounds as sound}
-                        <SoundBlock blockType="sfx" bind:soundData={sound} inputPrompt={inputPrompt}/>
-                    {/each}
-                </div>
-            </div>
-        </div>        
-    </div>
-    <BottomBar/>
-    <InputPrompt bind:this={inputPrompt}/>
+    {#if homeScreen}
+        <HomeScreen onFolderLoaded={onFolderLoaded}/>
+    {:else}
+        <SoundListView/>
+    {/if}
 </main>
 
 <style lang="scss">
@@ -80,115 +37,6 @@
         width: 100%;
         height: 100%;
         margin: 0;
-        padding: 0; 
-
-        #app {
-            position: absolute;
-            top: var(--topBarHeight, 25px);
-            left: 0;
-            right: 0;
-            padding: 0 5px;
-            bottom: 60px;
-            box-sizing: border-box;
-            overflow-y: auto;
-            overflow-x: hidden;
-            scrollbar-color: dark;
-
-            &::-webkit-scrollbar {
-                width: 10px;
-            }
-
-            &::-webkit-scrollbar-corner {
-                background: rgba(0,0,0,0);
-            }
-
-            &::-webkit-scrollbar-thumb {
-                background-color: rgba(252,255,255,0.6);
-                border-radius: 4px;
-                border: 4px solid rgba(0,0,0,0);
-            }
-
-            &::-webkit-scrollbar-track {
-                background-color: rgba(0,0,0, 0.1);
-            }
-        }
-
-        .category {
-            float: left;
-            box-sizing: border-box;
-            padding: 15px;
-            padding-bottom: 40px;
-
-            h2 {
-                width: 100%;
-                margin-top: 10px;
-                margin-bottom: 20px;
-                text-align: center;
-                user-select: none;
-                font-size: 22px;
-
-                .icon-font::before {
-                    font-family: 'icomoon';
-                    font-style: normal;
-                    display: inline-block;
-                    margin-right: 12px;
-                    font-size: 26px;
-                    transform: translateY(3px);
-                }
-
-                .music-icon::before {
-                    content: '\e901';
-                    color: var(--musicColor, #fff);
-                }
-
-                .ambient-icon::before {
-                    content: '\e900';
-                    color: var(--ambientColor, #fff);
-                }
-
-                .sfx-icon::before {
-                    content: '\e902';
-                    color: var(--sfxColor, #fff);
-                }
-            }
-        }
-
-        .first-col {
-            float: left;
-            width: 66.66%;
-
-            @media (max-width: 950px) {
-                width: 50%;
-            }
-
-            @media (max-width: 650px) {
-                width: 100%;
-            }
-
-            .category {
-                width: 50%;
-                
-                @media (max-width: 950px) {
-                    width: 100%;
-                }
-            }
-        }   
-
-        .second-col {
-            float: left;
-            width: 33.33%;
-            
-            @media (max-width: 950px) {
-                width: 50%;
-            }
-
-            @media (max-width: 650px) {
-                width: 100%;
-            }
-
-            .category {
-                width: 100%;
-            }
-        }
+        padding: 0;
     }
 </style>
