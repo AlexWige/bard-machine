@@ -1,10 +1,10 @@
 <script>
     import PlayButton from './PlayButton.svelte';
     import VolumeSlider from './VolumeSlider.svelte';
-    import GlobalColors from './GlobalColors';
+    import GlobalStyles from './GlobalStyles';
     import Color from 'color';
     import soundStore from './soundStore';
-    import { globalVolume } from './playerStore';
+    import { globalVolume, smallBlocks } from './playerStore';
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
@@ -51,8 +51,10 @@
     $: displayedKey = keyName;
     
     $: style = `--mainColor: ${mainColor.hex()};`
-    + `--mainBoxBG: ${isPlaying ? mainColor.hex() : GlobalColors.bg.lighten(0.5).hex()};`
-    + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : GlobalColors.bg.lighten(1.65).hex()};`;
+    + `--mainBoxBG: ${isPlaying ? mainColor.hex() : GlobalStyles.bg.lighten(0.5).hex()};`
+    + `--mainBoxBGHover: ${isPlaying ? mainColor.hex() : GlobalStyles.bg.lighten(0.65).hex()};`
+    + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : GlobalStyles.bg.lighten(1).hex()};`
+    + `--fontWeight: ${isPlaying ? '600' : '400'};`;
 
     $: sound.volume = soundData.volume * $globalVolume * faderValue;
 
@@ -66,9 +68,9 @@
 
     function getMainColor(blockType) {
         switch (blockType) {
-            case 'music': return GlobalColors.music;
-            case 'ambient': return GlobalColors.ambient;
-            case 'sfx': return GlobalColors.sfx;
+            case 'music': return GlobalStyles.music;
+            case 'ambient': return GlobalStyles.ambient;
+            case 'sfx': return GlobalStyles.sfx;
             default: return Color('#333');
         }
     }
@@ -103,59 +105,35 @@
     }
 </script>
 
-<div class="sound-block {blockType}" style="{style}">
+<div class="sound-block" class:small={$smallBlocks} style="{style}">
     <div class="main-box">
         <div class="info-zone" class:active={isPlaying}>
-            <i class="category-icon"></i>
             <div class="info-bar">
                 {soundData.title ?? ""}
             </div>
             <div class="volume">
-                <VolumeSlider mainColor={mainColor} bind:isPlaying={isPlaying} bind:volume={soundData.volume}></VolumeSlider>
+                <VolumeSlider bind:isSmall={$smallBlocks} mainColor={mainColor} bind:isPlaying={isPlaying} bind:volume={soundData.volume}></VolumeSlider>
             </div>
         </div>       
         <div class="assign-btn" on:pointerdown={() => inputPrompt.show(hotKeyAPI)}>{displayedKey}</div>         
     </div>
-    <PlayButton mainColor={mainColor} bind:isPlaying={isPlaying} onRightClick={onPlayButtonRightClick}/>
+    <PlayButton usePause={soundData.category != 'sfx'} bind:isSmall={$smallBlocks} mainColor={mainColor} bind:isPlaying={isPlaying} onRightClick={onPlayButtonRightClick}/>
     <Fader bind:this={fader} bind:value={faderValue} onEnd={onFaderEnd}/>
 </div>
 
 <style lang="scss">
     .sound-block {
-        &.ambient {
-            .main-box .info-zone .category-icon::before {
-                content: '\e9a4';
-            }
-        }
-        
-        &.music {
-            .main-box .info-zone .category-icon::before {
-                content: '\e911';
-            }
-        }
-        
-        &.sfx {
-            .main-box .info-zone .category-icon::before {
-                content: '\e996';
-            }
-        }
-
         font-family: 'Poppins', sans-serif;
         position: relative;
-        margin: 19px 0;
-        height: 60px;
+        margin: 15px 0;
+        height: 52px;
         width: 100%;
-        font-weight: 400;
-
-        &.active {
-            font-weight: 600;
-        }
 
         .main-box {
             position: absolute;
             top: 0;
             bottom: 0;
-            left: 40px;
+            left: 30px;
             right: 0;
             user-select: none;
             transition: box-shadow 0.15s;
@@ -163,24 +141,25 @@
 
             &:hover {
                 box-shadow: 0 0 10px transparentize(#000, 0.9);
+                background-color: var(--mainBoxBGHover, #333);
             }
 
             .volume {
                 position: absolute;
-                bottom: 7px;
+                bottom: 3px;
                 width: 100%;
-                height: 8px;
+                height: 9px;
             }
 
             .assign-btn {
                 position: absolute;
                 height: 40px;
                 width: 40px;
-                right: 14px;
-                top: 10px;
+                right: 7px;
+                top: 6px;
                 box-sizing: border-box;
                 border: 4px solid var(--assignButtonBorder, #555);
-                border-radius: 8px;
+                border-radius: 5px;
                 background-color: transparentize(#000, 0.8);
                 color: white;
                 text-align: center;
@@ -207,16 +186,12 @@
             .info-zone {
                 position: absolute;
                 top: 5px;            
-                left: 44px;
+                left: 40px;
                 bottom: 8px;
-                right: 73px;
+                right: 64px;
                 font-weight: 400;
                 text-shadow: 0 0.5px 6px #00000044;
                 user-select: none;
-                
-                &.active {
-                    font-weight: 500;
-                }
 
                 .info-bar {
                     position: absolute;
@@ -228,19 +203,57 @@
                     white-space: nowrap;
                     overflow: hidden;
                     text-overflow: ellipsis;
+                    font-weight: var(--fontWeight, 400);
                 }
+            }
+        }
 
-                .category-icon {
-                    &::before {
-                        font-family: 'icomoon';
-                        display:  none;
-                        position: absolute;
-                        left: 0;
-                        top: 2px;
-                        font-size: 18px;
-                        font-style: normal;
-                        font-weight: normal;
-                    }
+        &.small {
+            height: 30px;
+            margin: 1px 0;
+
+            .main-box {
+                left: 0;
+                border-radius: 2px;
+            }
+
+            .assign-btn {
+                width: 24px;
+                height: 24px;
+                top: 3px;
+                right: 4px;
+                border-width: 2px;
+                border-radius: 3px;
+                border-color: transparent;
+                font-size: 17.5px;
+                padding: 2px;
+                line-height: 1em;
+            }
+
+            .volume {
+                position: absolute;
+                top: 10px;
+                bottom: auto;
+                height: 10px;
+                left: 60%;
+                right: 0px;
+                width: auto;
+            }
+
+            .info-zone {
+                top: 0px;
+                bottom: 0;
+                right: 45px;
+                left: 40px;
+
+                .info-bar {
+                    height: 100%;
+                    font-size: 13px;
+                    top: 6px;            
+                    left: 0px;
+                    bottom: 8px;
+                    right: 40%;
+                    padding-right: 8px;
                 }
             }
         }

@@ -1,5 +1,5 @@
 <script>
-    import GlobalColors from "./GlobalColors";
+    import GlobalStyles from "./GlobalStyles";
     import SoundBlock from "./SoundBlock.svelte";
     import { hotKeys, isPromptActive } from "./hotkeyStore";
     import { onDestroy, onMount } from "svelte";
@@ -7,9 +7,10 @@
     $: isActive = $isPromptActive;
     let currentKeyAPI;
 
-    $: style = `--bgCache: ${GlobalColors.bg.darken(0.5).fade(0.1).rgb()};`
-        + `--boxBg: ${GlobalColors.bg.lighten(0.6).rgb()};`
-        + `--displayed: ${isActive ? 'block' : 'none'};`;
+    $: style = `--bgCache: ${GlobalStyles.bg.darken(0.5).fade(0.1).rgb()};`
+        + `--boxBg: ${GlobalStyles.bg.lighten(0.6).rgb()};`
+        + `--displayed: ${isActive ? 'block' : 'none'};`
+        + `--topBarHeight: ${GlobalStyles.topBarSize};`;
 
     onMount(async () => {
         window.addEventListener('keydown', onKeyDown);
@@ -87,7 +88,7 @@
         display: var(--displayed, none);
         background-color: var(--bgCache, #333333cc);
         position: fixed;
-        top: 24px;
+        top: var(--topBarHeight, 25px);
         left: 0;
         width: 100%;
         height: 100%;
@@ -104,10 +105,6 @@
             box-shadow: 0 0 20px 1px rgba(0, 0, 0, 0.25);
         }
 
-        &.active {
-            display: block;
-        }
-
         #input-prompt-touch-zone {
             position: absolute;
             top: 0;
@@ -122,12 +119,6 @@
             margin: 5px auto 20px auto;
             text-align: center;
             user-select: none;
-        }
-
-        img {
-            display: block;
-            margin: 30px auto 10px auto;
-            opacity: 0.9;
         }
 
         .key {

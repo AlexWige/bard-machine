@@ -1,22 +1,19 @@
 <script>
     import Color from "color";
-import { afterUpdate, onMount } from "svelte";
-    import GlobalColors from "./GlobalColors";
+    import { onMount } from "svelte";
 
     export let volume;
     export let mainColor;
     export let isPlaying = false;
     export let onChange = (v) => {};
+    export let isSmall = false;
 
     let bar;
-    let knob;
     let activeBar;
 
     $: iconClass = getVolumeIconClass(volume);
 
-    $: style = `--barColor: ${isPlaying ? mainColor.mix(Color('white'), 0.7).hex() : mainColor.hex()};`
-        + `--knobColor: ${isPlaying ? Color('white') : mainColor.mix(Color('white'), 0.65).hex()};`
-        + `--iconColor: ${isPlaying ? Color('white') : mainColor.hex()}`;
+    $: style = `--barColor: ${isPlaying ? Color('white') : mainColor.hex()};`;
 
     onMount(async() => {
         moveKnob(volume);
@@ -29,24 +26,25 @@ import { afterUpdate, onMount } from "svelte";
         else return 'high';
     }
 
-    function onKnobPointerDown(e) {
+    function onPointerDown(e) {
+        onPointerMove(e);
         if(e.pointerType == "mouse") {
-            window.addEventListener('pointermove', onKnobPointerMove);
-            window.addEventListener('pointerup', onKnobPointerUp);
+            window.addEventListener('pointermove', onPointerMove);
+            window.addEventListener('pointerup', onPointerUp);
         } else {
-            window.addEventListener('touchmove', onKnobPointerMove);
-            window.addEventListener('touchend', onKnobPointerUp);
+            window.addEventListener('touchmove', onPointerMove);
+            window.addEventListener('touchend', onPointerUp);
         }
     }
 
-    function onKnobPointerUp(e) {
-        window.removeEventListener('pointermove', onKnobPointerMove);
-        window.removeEventListener('pointerup', onKnobPointerUp);
-        window.removeEventListener('touchmove', onKnobPointerMove);
-        window.removeEventListener('pointerup', onKnobPointerUp);
+    function onPointerUp(e) {
+        window.removeEventListener('pointermove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('touchmove', onPointerMove);
+        window.removeEventListener('pointerup', onPointerUp);
     }
 
-    function onKnobPointerMove(e) {
+    function onPointerMove(e) {
         let x = e.pointerType == 'mouse' ? e.clientX : e.touches[0].clientX;
         let rect = bar.getBoundingClientRect();
         let ratio = (x - rect.left) / (rect.right - rect.left);
@@ -57,25 +55,28 @@ import { afterUpdate, onMount } from "svelte";
 
     function moveKnob(vol) {
         activeBar.style.width = vol * 100 + '%';
-        knob.style.left = (vol * 100) + '%';
         volume = vol;
         onChange(vol);
     }
 </script>
 
 
-<div class="volume-slider" style="{style}">
-    <i class="volume-icon {iconClass}"></i>
-    <div class="bar" bind:this={bar} on:pointerdown={onKnobPointerDown}>
+<div class="volume-slider" class:small={isSmall} style="{style}">
+    <i class="icon-font volume-icon {iconClass}"></i>
+    <div class="bar" bind:this={bar} on:pointerdown={onPointerDown}>
+        <div class="bar-bg"></div>
         <div class="active-volume" bind:this={activeBar}></div>
-        <div class="volume-btn" bind:this={knob} on:pointerdown={onKnobPointerDown}></div>
     </div>
 </div>
 
 <style lang="scss">
+    @import './fonts.scss';
+
+    $safe-margin: 8px;
+
     .volume-slider {
         width: 100%;
-        height: 8px;
+        height: 100%;
 
         i {
             &::before {
@@ -83,11 +84,12 @@ import { afterUpdate, onMount } from "svelte";
                 display:  block;
                 position: absolute;
                 left: 0;
-                top: -7px;
-                font-size: 20px;
+                top: 50%;
+                margin-top: -8.5px;
+                font-size: 17px;
                 font-style: normal;
                 font-weight: normal;
-                color: var(--iconColor, #fff);
+                color: var(--barColor, #fff);
                 text-shadow: none;
             }
         
@@ -106,16 +108,25 @@ import { afterUpdate, onMount } from "svelte";
         }
 
         .bar {
+            cursor: pointer;
             position: absolute;
-            height: 100%;
-            left: 32px;
+            top: -$safe-margin;
+            bottom: -$safe-margin;
+            left: 26px;
             right: 0;
-            background-color: transparentize(black, 0.75);
+
+            .bar-bg {
+                top: $safe-margin;
+                bottom: $safe-margin;
+                width: 100%;
+                position: absolute;
+                background-color: transparentize(black, 0.7);
+            }
 
             .active-volume {
                 position: absolute;
-                top: 0;
-                bottom: 0;
+                top: $safe-margin;
+                bottom: $safe-margin;
                 width: 60%;
                 background-color: var(--barColor, #ccc);
             }
@@ -123,21 +134,40 @@ import { afterUpdate, onMount } from "svelte";
             .volume-btn {
                 content: ' ';
                 display: block;
+                opacity: 0;
                 position: absolute;
                 left: 60%;
                 margin-left: -9px;
-                width: 18px;
+                width: 20px;
                 top: -7px;
-                height: 22px;
-                border-radius: 4px;
+                height: 20px;
+                border-radius: 50%;
                 cursor: pointer;
-                transition: 0;
-                background-color: var(--knobColor, #fff);
+                background-color: var(--barColor, #fff);
         
                 &:hover {
                     transform: scale(1.1);
                 }
             }
-        }    
+        }
+
+        &.small {
+            i {
+                display: none;
+            }
+
+            .bar {
+                left: 0px;
+            }
+
+            .volume-btn {
+                opacity: 0;
+                height: 15px;
+                top: -4px;
+                width: 14px;
+                margin-left: -7px;
+                border-radius: 2px;
+            }
+        }
     }
 </style>

@@ -1,19 +1,31 @@
 <script>
 import Color from "color";
 
-    import GlobalColors from "./GlobalColors";
+    import GlobalStyles from "./GlobalStyles";
 
     export let isPlaying;
     export let mainColor;
     export let onPressed = null;
     export let onRightClick = null;
+    export let isSmall = false;
+    export let usePause = false;
 
     $: style = `--mainColor: ${isPlaying ? 'white' : mainColor.hex()};`
         + `--iconColor: ${getIconColor()};`;
 
+    $: iconClass = getIconClass(isPlaying, usePause);
+
+    function getIconClass (isPlaying, usePause) {
+        if(!isPlaying) return 'play';
+        else {
+            if(usePause) return 'pause';
+            return 'stop';
+        }
+    };
+
     function getIconColor() {
-        if(!isPlaying) return mainColor.mix(GlobalColors.bg, 0.62).hex();
-        else return Color('white').mix(GlobalColors.bg, 0.7).hex();
+        if(!isPlaying) return mainColor.mix(GlobalStyles.bg, 0.62).hex();
+        else return Color('white').mix(GlobalStyles.bg, 0.7).hex();
     }
 
     function onPointerDown(e) {
@@ -26,46 +38,80 @@ import Color from "color";
     }
 </script>
 
-<div class="play-button" style="{style}" on:pointerdown="{onPointerDown}">
-    <i class="{isPlaying ? 'icon-stop2' : 'icon-play3'}"></i>
+<div class="play-button" class:small={isSmall} style="{style}" on:pointerdown="{onPointerDown}">
+    <i class="{iconClass} icon-font"></i>
 </div>
 
 <style lang="scss">
     @import './fonts.scss';
 
-    $size: 67px;
-
     .play-button {
         position: absolute;
-        height: $size;
-        width: $size;
+        height: 58px;
+        width: 58px;
         border-radius: 50%;
-        top: -4px;
+        top: -3px;
         cursor: pointer;
-        transition: 0.1s;
         box-sizing: border-box;
         text-align: center;
-        padding-top: 16px;
-        transition: transform 0.2s background-color 0.1s;
+        padding-top: 12px;
         background-color: var(--mainColor, #ccc);
         color: var(--iconColor, #333);
 
         i {
             font-size: 35px;
+            font-family: 'icomoon';
+            font-style: normal;
+            line-height: 1;
+            margin-left: 1px;
 
-            &.icon-play3 {
-                margin-left: 8px;
+            &.play {
+                margin-left: 7px;
+
+                &::before {
+                    content: "\ea1c";
+                }
+            }
+
+            &.pause {
+                margin-left: 0px;
+
+                &::before {
+                    content: "\ea1d";
+                }
+            }
+
+            &.stop::before {
+                content: "\ea1e";
             }
         }
 
         &:hover {
-            transition: transform 0.05s;
             transform: scale(1.06);
         }
 
         &:active {
-            transition: transform 0.02s;
             transform: scale(1.1);
+        }
+
+        &.small {
+            width: 34px;
+            height: 34px;
+            padding-top: 5px;
+            border-radius: 0;
+            top: 0px;
+            left: 0px;
+            background-color: transparent;
+
+            i {
+                margin-left: 2px;
+                font-size: 18px;
+                color: var(--mainColor, #ccc);
+
+                &.play {
+                    margin-left: 3px;
+                }
+            }
         }
     }
 </style>

@@ -5,7 +5,7 @@ import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import css from 'rollup-plugin-css-only';
 import preprocess from 'svelte-preprocess';
-import path, { dirname } from 'path';
+import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 
 const production = !process.env.ROLLUP_WATCH;
@@ -47,12 +47,12 @@ export default {
 				dev: !production
 			},
             preprocess: preprocess(),
-            onwarn: (warning, handler) => {
-                const { code, frame } = warning;
-                if (code === "css-unused-selector")
-                    return;
-                handler(warning);
-            },
+            // onwarn: (warning, handler) => {
+            //     const { code, frame } = warning;
+            //     if (code === "css-unused-selector")
+            //         return;
+            //     handler(warning);
+            // },
 		}),
 		// we'll extract any component CSS out into
 		// a separate file - better for performance

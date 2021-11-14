@@ -1,11 +1,12 @@
 <script>
+	import Switch from './Switch.svelte';
     import VolumeSlider from './VolumeSlider.svelte';
     import Color from 'color';
-    import GlobalColors from './GlobalColors';
-    import { globalVolume } from './playerStore';
+    import GlobalStyles from './GlobalStyles';
+    import { globalVolume, smallBlocks } from './playerStore';
     import soundStore from './soundStore';
     
-    $: style = `--barColor: ${GlobalColors.bg.lighten(0.9).hex()};`;
+    $: style = `--barColor: ${GlobalStyles.bg.lighten(0.9).hex()};`;
 </script>
 
 <div id="bottom-bar" style={style}>
@@ -14,14 +15,15 @@
         <div class="volume">
             <VolumeSlider mainColor={Color("#999")} bind:volume={$globalVolume} isPlaying={true}/>
         </div>
+        <div class="switch">
+            <Switch bind:checked={$smallBlocks}></Switch>
+            <img class:active={$smallBlocks} src="icons/reduce-icon.svg" alt="Use Small Icons">
+        </div>
     </div>
 </div>
 
 <style lang="scss">
-    @import './fonts.scss';
-
     $bottom-bar-size: 420px;
-    $bottom-bar-height: 40px;
 
     #bottom-bar {
         position: fixed;
@@ -36,15 +38,14 @@
     }
 
     #bottom-bar .center-controls {
-
-        position: absolute;
-        left: 50%;
-        top: (60px - $bottom-bar-height) / 2;
-        width: $bottom-bar-size;
-        height: $bottom-bar-height;
-        margin-left: - $bottom-bar-size / 2;
+        position: relative;
+        margin: 9px auto;
+        width: 90%;
+        height: 40px;
+        max-width: 500px;
 
         i.stop {
+            line-height: 31px;
             &:hover::after {
                 transform: scale(1.1);
                 opacity: 1;
@@ -73,8 +74,29 @@
             position: absolute;
             top: 16px;
             left: 65px;
-            right: 16px;
+            right: 95px;
             height: 8px;
+        }
+
+        .switch {
+            display: block;
+            position: absolute;
+            top: 9px;
+            right: 38px;
+            height: 8px;
+
+            img {
+                width: 19px;
+                display: block;
+                position: absolute;
+                right: -29px;
+                top: 2px;
+                opacity: 0.6;
+
+                &.active {
+                    opacity: 1;
+                }
+            }
         }
     }
 </style>

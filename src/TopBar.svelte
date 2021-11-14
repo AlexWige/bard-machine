@@ -1,32 +1,37 @@
 <script>
-import { onMount } from "svelte";
-const { ipcRenderer } = window.require('electron');
-let maximizedWindow = false;
+    import { onMount } from "svelte";
+    import GlobalStyles from "./GlobalStyles";
+    const { ipcRenderer } = window.require('electron');
+    let maximizedWindow = false;
 
-onMount(async () => {
-    ipcRenderer.on('window-unmaximized', () => {
-        maximizedWindow = false;
+    
+
+    $: style = `--barHeight: ${GlobalStyles.topBarSize};`;
+
+    onMount(async () => {
+        ipcRenderer.on('window-unmaximized', () => {
+            maximizedWindow = false;
+        });
+
+        ipcRenderer.on('window-maximized', () => {
+            maximizedWindow = true;
+        });
+
+        document.getElementById("min-btn").addEventListener("click", function (e) {
+            ipcRenderer.send('minimize-window');
+        });
+
+        document.getElementById("max-btn").addEventListener("click", function (e) {
+            ipcRenderer.send('maximize-window');
+        });
+
+        document.getElementById("close-btn").addEventListener("click", function (e) {
+            ipcRenderer.send('close-window');
+        }); 
     });
-
-    ipcRenderer.on('window-maximized', () => {
-        maximizedWindow = true;
-    });
-
-    document.getElementById("min-btn").addEventListener("click", function (e) {
-        ipcRenderer.send('minimize-window');
-    });
-
-    document.getElementById("max-btn").addEventListener("click", function (e) {
-        ipcRenderer.send('maximize-window');
-    });
-
-    document.getElementById("close-btn").addEventListener("click", function (e) {
-        ipcRenderer.send('close-window');
-    }); 
-});
 </script>
 
-<div id="top-bar">
+<div id="top-bar" style={style}>
     <div id="command-buttons">
         <img src="top-bar/title-bar-btn-03-close.svg" alt="Close" class="button" id="close-btn">
         <img src="top-bar/title-bar-btn-02{maximizedWindow ? 'b' : ''}-enlarge.svg" alt="Enlarge" class="button" id="max-btn">
@@ -36,12 +41,10 @@ onMount(async () => {
 
 <style lang="scss">
     #top-bar {
-        $top-bar-height: 24px;
-
         position: fixed;
         top: 0;
         width: 100%;
-        height: $top-bar-height;
+        height: var(--barHeight, 25px);
         background-color: rgba(0, 0, 0, 0.4);
         -webkit-user-select: none;
         -webkit-app-region: drag;
@@ -58,7 +61,7 @@ onMount(async () => {
                 -webkit-app-region: no-drag;
                 float: right;
                 padding: 0 8px;
-                width: $top-bar-height;
+                width: var(--barHeight, 25px);
 
                 &:hover {
                     background-color: rgba(255, 255, 255, 0.2);

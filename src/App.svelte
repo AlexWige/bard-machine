@@ -2,7 +2,7 @@
     import TopBar from "./TopBar.svelte";
     import BottomBar from "./BottomBar.svelte";
     import SoundBlock from "./SoundBlock.svelte";
-    import GlobalColors from "./GlobalColors";
+    import GlobalStyles from "./GlobalStyles";
     import InputPrompt from "./InputPrompt.svelte";
     import { onDestroy, onMount, tick } from "svelte";
     const { ipcRenderer } = window.require('electron');
@@ -11,7 +11,9 @@
 
     let inputPrompt;
 
-    $: style = `--bg: ${GlobalColors.bg};`
+    $: style = `--bg: ${GlobalStyles.bg};`
+            + `--topBarHeight: ${GlobalStyles.topBarSize};`;
+            
     ipcRenderer.send('open-file-dialog');
 
     onMount(async () => {
@@ -79,7 +81,7 @@
 
         #app {
             position: absolute;
-            top: 24px;
+            top: var(--topBarHeight, 25px);
             left: 0;
             right: 0;
             padding: 0 5px;
