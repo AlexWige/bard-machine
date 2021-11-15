@@ -7,7 +7,7 @@ import Color from "color";
     export let mainColor;
     export let onPressed = null;
     export let onRightClick = null;
-    export let isSmall = false;
+    export let isBig = true;
     export let usePause = false;
 
     $: style = `--mainColor: ${isPlaying ? 'white' : mainColor.hex()};`
@@ -38,7 +38,7 @@ import Color from "color";
     }
 </script>
 
-<div class="play-button" class:small={isSmall} style="{style}" on:pointerdown="{onPointerDown}">
+<div class="play-button" class:small={!isBig} style="{style}" on:pointerdown="{onPointerDown}">
     <i class="{iconClass} icon-font"></i>
 </div>
 

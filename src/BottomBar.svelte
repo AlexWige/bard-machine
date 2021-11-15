@@ -3,7 +3,7 @@
     import VolumeSlider from './VolumeSlider.svelte';
     import Color from 'color';
     import GlobalStyles from './GlobalStyles';
-    import { globalVolume, smallBlocks } from './playerStore';
+    import { globalVolume, bigBlocks } from './playerStore';
     import soundStore from './soundStore';
     
     $: style = `--barColor: ${GlobalStyles.bg.lighten(0.9).hex()};`;
@@ -16,8 +16,8 @@
             <VolumeSlider mainColor={Color("#999")} bind:volume={$globalVolume} isPlaying={true}/>
         </div>
         <div class="switch">
-            <Switch bind:checked={$smallBlocks}></Switch>
-            <img class:active={$smallBlocks} src="icons/reduce-icon.svg" alt="Use Small Icons">
+            <Switch bind:checked={$bigBlocks}></Switch>
+            <img class:active={$bigBlocks} src="icons/enlarge-icon.svg" alt="Use Small Icons">
         </div>
     </div>
 </div>

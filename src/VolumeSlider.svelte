@@ -6,7 +6,7 @@
     export let mainColor;
     export let isPlaying = false;
     export let onChange = (v) => {};
-    export let isSmall = false;
+    export let isBig = true;
 
     let bar;
     let activeBar;
@@ -61,7 +61,7 @@
 </script>
 
 
-<div class="volume-slider" class:small={isSmall} style="{style}">
+<div class="volume-slider" class:small={!isBig} style="{style}">
     <i class="icon-font volume-icon {iconClass}"></i>
     <div class="bar" bind:this={bar} on:pointerdown={onPointerDown}>
         <div class="bar-bg"></div>

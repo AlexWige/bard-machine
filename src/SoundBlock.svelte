@@ -4,7 +4,7 @@
     import GlobalStyles from './GlobalStyles';
     import Color from 'color';
     import soundStore from './soundStore';
-    import { globalVolume, smallBlocks } from './playerStore';
+    import { globalVolume, bigBlocks } from './playerStore';
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
@@ -105,19 +105,19 @@
     }
 </script>
 
-<div class="sound-block" class:small={$smallBlocks} style="{style}">
+<div class="sound-block" class:small={!$bigBlocks} style="{style}">
     <div class="main-box">
         <div class="info-zone" class:active={isPlaying}>
             <div class="info-bar">
                 {soundData.title ?? ""}
             </div>
             <div class="volume">
-                <VolumeSlider bind:isSmall={$smallBlocks} mainColor={mainColor} bind:isPlaying={isPlaying} bind:volume={soundData.volume}></VolumeSlider>
+                <VolumeSlider bind:isBig={$bigBlocks} mainColor={mainColor} bind:isPlaying={isPlaying} bind:volume={soundData.volume}></VolumeSlider>
             </div>
         </div>       
         <div class="assign-btn" on:pointerdown={() => inputPrompt.show(hotKeyAPI)}>{displayedKey}</div>         
     </div>
-    <PlayButton usePause={soundData.category != 'sfx'} bind:isSmall={$smallBlocks} mainColor={mainColor} bind:isPlaying={isPlaying} onRightClick={onPlayButtonRightClick}/>
+    <PlayButton usePause={soundData.category != 'sfx'} bind:isBig={$bigBlocks} mainColor={mainColor} bind:isPlaying={isPlaying} onRightClick={onPlayButtonRightClick}/>
     <Fader bind:this={fader} bind:value={faderValue} onEnd={onFaderEnd}/>
 </div>
 
