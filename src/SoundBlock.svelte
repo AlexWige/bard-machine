@@ -43,6 +43,9 @@
     });
     
     onDestroy(async() => {
+        sound.pause();
+        sound.src = '';
+        sound.remove();
         fader.pause();
     });
     
