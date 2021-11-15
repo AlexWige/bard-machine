@@ -41,8 +41,25 @@ input:disabled {
 
 button {
 	color: #333;
-	background-color: #f4f4f4;
+	background-color: #f4f4f422;
 	outline: none;
+    padding: 3px 12px;
+    border-radius: 4px;
+    font-size: 14.5px;
+    color: #fff;
+    border: none;
+    cursor:pointer;
+}
+
+button.big {
+    padding: 4.5px 18px;
+    font-size: 16px;
+    color: #fff;
+    font-weight: 500;
+}
+
+button:hover {
+	background-color: #f4f4f444;
 }
 
 button:disabled {
@@ -54,7 +71,29 @@ button:not(:disabled):active {
 }
 
 button:focus {
-	border-color: #666;
+	outline: none;
+}
+
+input[type=text] {
+    font-size: 15px;
+    padding: 4px 8px;
+    width: 100%;
+    background-color: rgba(0, 0, 0, 0.2);
+    border: 1px rgba(0, 0, 0, 0.3) solid;
+    outline: 0;
+    color: #fff;
+}
+
+input[type=text]::placeholder {
+    font-style: italic;
+}
+
+input[type=text]:focus {
+    border: 1px rgba(255, 255, 255, 0.3) solid;
+}
+
+input:focus::placeholder {
+    color: transparent;
 }
 
 .icon-font {

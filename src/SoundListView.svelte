@@ -23,6 +23,9 @@
                     {#each $soundStore.music.sounds as sound}
                         <SoundBlock blockType="music" bind:soundData={sound} inputPrompt={inputPrompt}/>
                     {/each}
+                    {#if $soundStore.music.sounds.length == 0}
+                        <div class="empty-sound">No sound found in this category.</div>
+                    {/if}
                 </div>
             </div>
             <div class="category ambient">
@@ -31,6 +34,9 @@
                     {#each $soundStore.ambient.sounds as sound}
                         <SoundBlock blockType="ambient" bind:soundData={sound} inputPrompt={inputPrompt}/>
                     {/each}
+                    {#if $soundStore.ambient.sounds.length == 0}
+                        <div class="empty-sound">No sound found in this category.</div>
+                    {/if}
                 </div>
             </div>
         </div>
@@ -41,6 +47,9 @@
                     {#each $soundStore.sfx.sounds as sound}
                         <SoundBlock blockType="sfx" bind:soundData={sound} inputPrompt={inputPrompt}/>
                     {/each}
+                    {#if $soundStore.sfx.sounds.length == 0}
+                        <div class="empty-sound">No sound found in this category.</div>
+                    {/if}
                 </div>
             </div>
         </div>
@@ -79,6 +88,20 @@
             box-sizing: border-box;
             padding: 15px;
             padding-bottom: 40px;
+
+            
+
+            .empty-sound {
+                width: 80%;
+                margin: 20px auto;
+                max-width: 250px;
+                background-color: rgba(0, 0, 0, 0.18);
+                color: #ddd;
+                font-size: 13px;
+                border-radius: 4px;
+                padding: 5px;
+                text-align: center;
+            }
 
             h2 {
                 width: 100%;

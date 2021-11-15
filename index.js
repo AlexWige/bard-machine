@@ -3,9 +3,10 @@ const path = require("path");
 
 let dialogOpened = false;
 const dev = false;
+let window;
 
 app.on("ready", () => {
-    const window = new BrowserWindow({ 
+    window = new BrowserWindow({ 
         width: 1200, 
         height: 700,
         minWidth: 400,
@@ -39,22 +40,39 @@ app.on("ready", () => {
 
     ipcMain.on('close-window', () => {
         window.close();
+    });    
+
+    app.on('browser-window-focus', () => {
+        window.webContents.send("app-focused");
     });
 
-    ipcMain.on('open-file-dialog', (event) => {
-
+    ipcMain.on('dialog-open-folder', (event) => {
         if(dialogOpened) return;
         dialogOpened = true;
-        dialog.showOpenDialog({ title: 'Bard Machine Directory', properties: ['openDirectory']})
+        dialog.showOpenDialog({ title: 'Open Bard Machine Collection', properties: ['openDirectory']})
         .then((data) => {
             dialogOpened = false;
             if(data.canceled || data.filePaths.length <= 0) {
-                app.quit();
+                return;
             } else {
-                event.sender.send('selected-directory', data.filePaths[0]);
+                event.sender.send('open-collection-directory', data.filePaths[0]);
             }
-        });        
-    })
+        });
+    });
+
+    ipcMain.on('dialog-create-folder', (event) => {
+        if(dialogOpened) return;
+        dialogOpened = true;
+        dialog.showOpenDialog({ title: 'Create Bard Machine Collection', properties: ['openDirectory']})
+        .then((data) => {
+            dialogOpened = false;
+            if(data.canceled || data.filePaths.length <= 0) {
+                return;
+            } else {
+                event.sender.send('selected-tocreate-directory', data.filePaths[0]);
+            }
+        });
+    });
 });
 
 function updateMaximizeButton(window) {

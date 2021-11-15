@@ -1,13 +1,13 @@
 {
-  "name": "svelte-app",
-  "version": "1.0.0",
+  "name": "bard-machine",
+  "version": "0.5.0",
   "private": true,
   "main": "index.js",
   "scripts": {
     "build": "rollup -c",
     "dev": "rollup -c -w",
     "start": "electron .",
-    "distrib": "electron-packager ./ bardmachine --platform=win32 --out=release-builds --arch=x64 --icon=./icon.ico --overwrite"
+    "distrib": "rollup -c & electron-packager ./ bardmachine --platform=win32 --out=release-builds --arch=x64 --icon=./icon.ico --overwrite"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^17.0.0",

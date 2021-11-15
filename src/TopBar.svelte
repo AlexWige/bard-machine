@@ -1,10 +1,12 @@
 <script>
     import { onMount } from "svelte";
+    import { onHomeScreen } from "./playerStore";
     import GlobalStyles from "./GlobalStyles";
     const { ipcRenderer } = window.require('electron');
     let maximizedWindow = false;
 
     $: style = `--barHeight: ${GlobalStyles.topBarSize};`;
+    let hoveringHomeButton = false;
 
     onMount(async () => {
         ipcRenderer.on('window-unmaximized', () => {
@@ -15,10 +17,18 @@
             maximizedWindow = true;
         });
     });
+
+    function onClickTitle() {
+        console.log("hey");
+        onHomeScreen.set(true)
+    }
 </script>
 
 <div id="top-bar" style={style}>
-    <img src="icon_grey_1.svg" id="icon" alt="icon"> <div id="title">Bard Machine</div>
+    <div id="home-button" on:click={onClickTitle} on:mouseenter={() => hoveringHomeButton = true} on:mouseleave={() => hoveringHomeButton = false}>
+        <img src="icon_color_1.svg" alt="color" style="visibility: hidden;">
+        <img src="{hoveringHomeButton ? 'icon_color_1.svg' : 'icon_grey_1.svg'}" id="icon" alt="icon"> <div id="title">Bard Machine</div>
+    </div>
     <div id="command-buttons">
         <div class="button close" on:pointerup="{(e) => ipcRenderer.send('close-window')}" >
             <img src="top-bar/title-bar-btn-03-close.svg" alt="Close window">
@@ -41,24 +51,46 @@
         background-color: rgba(0, 0, 0, 0.4);
         -webkit-user-select: none;
         -webkit-app-region: drag;
-
-        #title {
+        
+        #home-button {
             display: block;
             position: absolute;
-            font-size: 12px;
-            top: 6px;
-            left: 40px;
+            top: 0;
             bottom: 0;
-            color: #aaa;
-        }
+            left: 0;
+            width: 130px;
+            cursor: pointer;
+            -webkit-app-region: no-drag;
 
-        #icon {
-            display: block;
-            position: absolute;
-            top: 4px;
-            left: 11px;
-            height: 20px;
-            opacity: 0.7;
+            #title {
+                display: block;
+                position: absolute;
+                font-size: 12px;
+                top: 6px;
+                left: 40px;
+                width: 100px;
+                bottom: 0;
+                color: #aaa;
+                -webkit-app-region: no-drag;
+            }
+
+            #icon {
+                display: block;
+                position: absolute;
+                top: 4px;
+                left: 11px;
+                height: 20px;
+                opacity: 0.7;
+                -webkit-app-region: no-drag;
+            }
+
+            &:hover #title  {
+                color: white;
+            }
+
+            &:hover #icon  {
+                opacity: 1;
+            }
         }
 
         #command-buttons {
