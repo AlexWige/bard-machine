@@ -1,18 +1,24 @@
 <script>
     import PlayButton from './PlayButton.svelte';
     import VolumeSlider from './VolumeSlider.svelte';
+    import SoundContextMenu from './SoundContextMenu.svelte';
     import GlobalStyles from './GlobalStyles';
     import Color from 'color';
     import soundStore from './soundStore';
-    import { globalVolume, bigBlocks } from './playerStore';
+    import { globalVolume, bigBlocks, apis } from './playerStore';
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
     
     export let blockType = "music";
     export let isPlaying = false;
-    export let inputPrompt;
     export let soundData;
+
+    // Dom Elements
+    let mainBox;
+    let volumeSlider;
+    let playButton;
+    let assignButton;
 
     let fader;
     let faderValue = 0;
@@ -20,13 +26,14 @@
 
     let keyCode = 0;
     let keyName = "";
+    let isSelected = false;
 
     const hotKeyAPI = {
         getKeyCode: () => { return keyCode },
         setKey: (code, name) => { keyCode = code; keyName = name; },
         clearKeyCode: () => { keyCode = undefined; keyName = '';},
         triggerSound: () => { 
-            if(soundData.category == 'sfx') {
+            if(soundData.category == 'effects') {
                 isPlaying = true;
                 sound.currentTime = 0;
             } else {
@@ -34,12 +41,18 @@
             }
         }
     }
+
+    const selectionAPI = {
+        setSelected: (_selected) => { isSelected = _selected },
+        removeSound: removeSound
+    }
     
     onMount(async () => {
         sound.onended = () => {
-            if(soundData.category != 'sfx') sound.play();
+            if(soundData.category != 'effects') sound.play();
             else isPlaying = false;
         };
+        window.addEventListener('pointerup', onWindowClick);
     });
     
     onDestroy(async() => {
@@ -47,6 +60,7 @@
         sound.src = '';
         sound.remove();
         fader.pause();
+        window.removeEventListener('pointerup', onWindowClick);
     });
     
     $: mainColor = getMainColor(blockType);
@@ -56,12 +70,24 @@
     $: style = `--mainColor: ${mainColor.hex()};`
     + `--mainBoxBG: ${isPlaying ? mainColor.hex() : GlobalStyles.bg.lighten(0.5).hex()};`
     + `--mainBoxBGHover: ${isPlaying ? mainColor.hex() : GlobalStyles.bg.lighten(0.65).hex()};`
+    + `--mainBoxBGSelected: ${isPlaying ? mainColor.lighten(0.05).hex() : GlobalStyles.bg.lighten(1.2).hex()};`
+    + `--mainBoxBGSelectedHover: ${isPlaying ? mainColor.lighten(0.07).hex() : GlobalStyles.bg.lighten(1.4).hex()};`
     + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : GlobalStyles.bg.lighten(1).hex()};`
     + `--fontWeight: ${isPlaying ? '600' : '400'};`;
 
     $: sound.volume = soundData.volume * $globalVolume * faderValue;
 
     $: onPlayingStateChange(isPlaying);
+
+    $: onSelectedStateChange(isSelected);
+
+    function onSelectedStateChange(selected) {
+        if(selected) {
+            soundStore.addSelectedSound(selectionAPI);
+        } else {
+            soundStore.removeSelectedSound(selectionAPI);
+        }
+    }
 
     const playingSoundToken = {
         isPlaying: () => { return isPlaying },
@@ -73,7 +99,7 @@
         switch (blockType) {
             case 'music': return GlobalStyles.music;
             case 'ambient': return GlobalStyles.ambient;
-            case 'sfx': return GlobalStyles.sfx;
+            case 'effects': return GlobalStyles.effects;
             default: return Color('#333');
         }
     }
@@ -84,7 +110,7 @@
 
     function onPlayingStateChange(play) {
         if(play) {
-            if(soundData.category == 'sfx') {
+            if(soundData.category == 'effects') {
                 sound.currentTime = 0;
             }
             if(soundData.category == 'music') {
@@ -92,7 +118,7 @@
             }
             soundStore.addPlayingSound(playingSoundToken);
             fader.start(1.0);
-            if(soundData.category == 'sfx') fader.skip();
+            if(soundData.category == 'effects') fader.skip();
             sound.play();
         }
         else {
@@ -106,22 +132,83 @@
             sound.pause();
         }
     }
+
+    function onWindowClick(e) {
+        if(e.path.includes(mainBox)) {
+            // **** Inside box **** 
+            if(e.button == 0) {
+                // ** Left click
+                let changeSelection = !e.path.includes(playButton)
+                    && !e.path.includes(playButton)
+                    && !e.path.includes(assignButton);
+
+                if(changeSelection) {
+                    isSelected = !isSelected;
+                }
+            } else if(e.button == 2) {
+                // ** Right click
+                // isSelected = true;
+                apis.contextMenu?.show(e.clientX, e.clientY);
+            }
+            
+        } else {
+            // **** Outside box **** 
+            if(e.button == 0) {
+                // ** Left click
+                if(!e.ctrlKey) isSelected = false;
+            } else if(e.button == 2) {
+                // ** Right click
+                if(isSelected) {
+                    if(!soundStore.isSoundSelected(selectionAPI)) {
+                        isSelected = false;
+                    }
+                }
+            }
+        }
+    }
+
+    function removeSound() {
+        isPlaying = false;
+        isSelected = false;
+        soundStore.removeSound(soundData);
+    }
+
+    function onAssignButtonPressed(e) {
+        apis.inputPrompt?.show(hotKeyAPI);
+    }
 </script>
 
-<div class="sound-block" class:small={!$bigBlocks} style="{style}">
-    <div class="main-box">
+<div class="sound-block" class:small={!$bigBlocks} class:selected={isSelected} style="{style}">
+    <div class="main-box" bind:this={mainBox}>
         <div class="info-zone" class:active={isPlaying}>
             <div class="info-bar">
                 {soundData.title ?? ""}
             </div>
             <div class="volume">
-                <VolumeSlider bind:isBig={$bigBlocks} mainColor={mainColor} bind:isPlaying={isPlaying} bind:volume={soundData.volume}></VolumeSlider>
+                <VolumeSlider 
+                    bind:domElement={volumeSlider} 
+                    bind:isBig={$bigBlocks} 
+                    mainColor={mainColor} 
+                    bind:isPlaying={isPlaying} 
+                    bind:volume={soundData.volume}
+                />
             </div>
         </div>       
-        <div class="assign-btn" on:pointerdown={() => inputPrompt.show(hotKeyAPI)}>{displayedKey}</div>         
+        <div bind:this={assignButton} class="assign-btn" on:click={onAssignButtonPressed}>{displayedKey}</div>         
     </div>
-    <PlayButton usePause={soundData.category != 'sfx'} bind:isBig={$bigBlocks} mainColor={mainColor} bind:isPlaying={isPlaying} onRightClick={onPlayButtonRightClick}/>
-    <Fader bind:this={fader} bind:value={faderValue} onEnd={onFaderEnd}/>
+    <PlayButton 
+        bind:domElement={playButton} 
+        usePause= {soundData.category != 'effects'} 
+        bind:isBig={$bigBlocks} 
+        mainColor={mainColor} 
+        bind:isPlaying={isPlaying} 
+        onRightClick={onPlayButtonRightClick}
+    />
+    <Fader 
+        bind:this={fader} 
+        bind:value={faderValue} 
+        onEnd={onFaderEnd}
+    />
 </div>
 
 <style lang="scss">
@@ -136,6 +223,18 @@
             margin-top: 0;
         }
 
+        &.selected {
+            .main-box {
+                outline: 1px rgba(white, 0.75) solid;
+                background-color: var(--mainBoxBGSelected, #333);
+                
+
+                &:hover {
+                    background-color: var(--mainBoxBGSelectedHover, #333);
+                }
+            }
+        }
+
         .main-box {
             position: absolute;
             top: 0;
@@ -146,6 +245,7 @@
             transition: box-shadow 0.15s;
             background-color: var(--mainBoxBG, #333);
             border-radius: 2px;
+            box-sizing: border-box;
 
             &:hover {
                 box-shadow: 0 0 10px transparentize(#000, 0.9);

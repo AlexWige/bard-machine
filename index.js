@@ -46,32 +46,67 @@ app.on("ready", () => {
         window.webContents.send("app-focused");
     });
 
-    ipcMain.on('dialog-open-folder', (event) => {
+    ipcMain.on('dialog-open-collection', (event) => {
         if(dialogOpened) return;
         dialogOpened = true;
-        dialog.showOpenDialog({ title: 'Open Bard Machine Collection', properties: ['openDirectory']})
+        dialog.showOpenDialog(window, { 
+            title: 'Open Bard Machine Collection', 
+            properties: ['openFile'], 
+            filters: [
+                {
+                    name: "Collection",
+                    extensions: ['bmsounds']
+                },
+            ]
+        })
         .then((data) => {
             dialogOpened = false;
-            if(data.canceled || data.filePaths.length <= 0) {
-                return;
-            } else {
-                event.sender.send('open-collection-directory', data.filePaths[0]);
+            if(!data.canceled && data.filePaths.length > 0) {
+                event.sender.send('collection-open-path-selected', data.filePaths[0]);
             }
         });
     });
 
-    ipcMain.on('dialog-create-folder', (event) => {
+    ipcMain.on('dialog-import-sounds', (event) => {
         if(dialogOpened) return;
         dialogOpened = true;
-        dialog.showOpenDialog({ title: 'Create Bard Machine Collection', properties: ['openDirectory']})
+        dialog.showOpenDialog(window, { 
+            title: 'Open Bard Machine Sounds', 
+            properties: ['multiSelections'], 
+            filters: [
+                {
+                    name: "sounds",
+                    extensions: ['mp3', 'wav', 'ogg']
+                },
+            ]
+        })
         .then((data) => {
             dialogOpened = false;
             if(data.canceled || data.filePaths.length <= 0) {
-                return;
+                event.sender.send('import-new-sounds', []);
             } else {
-                event.sender.send('selected-tocreate-directory', data.filePaths[0]);
+                let paths = data.filePaths.filter(p => isMusicFile(p));
+                event.sender.send('import-new-sounds', paths);
             }
         });
+    });
+
+    ipcMain.on('dialog-create-collection', (event) => {
+        if(dialogOpened) return;
+        dialogOpened = true;
+        dialog.showSaveDialog(window, { 
+            title: 'Create Bard Machine Collection',
+            buttonLabel : "Create Collection",
+            filters :[
+                {name: 'Bard Machine Collection', extensions: ['bmsounds']},
+            ]
+        })
+        .then((data) => {
+            dialogOpened = false;
+            if(!data.canceled && data.filePath != '') {
+                event.sender.send('collection-create-path-selected', data.filePath);
+            }
+        });;
     });
 });
 
@@ -81,6 +116,11 @@ function updateMaximizeButton(window) {
     } else {
         window.webContents.send('window-unmaximized');
     }
+}
+
+function isMusicFile(filePath) {
+    let ext = path.extname(filePath);
+    return ext == '.mp3' || ext == '.ogg' || ext == '.wav';
 }
 
 const getWindow = () => remote.BrowserWindow.getFocusedWindow();

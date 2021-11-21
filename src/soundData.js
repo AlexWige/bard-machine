@@ -2,7 +2,8 @@ import soundStore from "./soundStore";
 import _ from 'lodash';
 
 export class SoundData {
-    constructor(path, category) {
+    constructor(id, path, category) {
+        this.id = id;
         this.path = path;
         this.category = category;
         this.volume = category == 'music' ? 0.6 : 0.8;

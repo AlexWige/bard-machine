@@ -7,6 +7,7 @@
     export let isPlaying = false;
     export let onChange = (v) => {};
     export let isBig = true;
+    export let domElement = {};
 
     let bar;
     let activeBar;
@@ -54,6 +55,7 @@
     }
 
     function moveKnob(vol) {
+        vol = Math.round(vol * 1000) / 1000;
         activeBar.style.width = vol * 100 + '%';
         volume = vol;
         onChange(vol);
@@ -61,7 +63,7 @@
 </script>
 
 
-<div class="volume-slider" class:small={!isBig} style="{style}">
+<div bind:this={domElement}  class="volume-slider" class:small={!isBig} style="{style}">
     <i class="icon-font volume-icon {iconClass}"></i>
     <div class="bar" bind:this={bar} on:pointerdown={onPointerDown}>
         <div class="bar-bg"></div>

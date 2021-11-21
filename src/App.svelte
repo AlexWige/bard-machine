@@ -6,34 +6,38 @@
     import fileLoader from "./fileLoader";
     import { onMount } from "svelte";
     import { onHomeScreen } from "./playerStore";
+    import SoundContextMenu from "./SoundContextMenu.svelte";
+    import soundStore from "./soundStore";
     const { ipcRenderer } = window.require('electron');
 
     $: style = `--bg: ${GlobalStyles.bg};`;
     $: collectionPath = fileLoader.collectionPath;
 
-    function onFolderLoaded(path) {
-        collectionPath.set(path);
-        fileLoader.getFilePaths(path, data => {
-            fileLoader.createSoundDatas(data, 'music');
-            fileLoader.createSoundDatas(data, 'ambient');
-            fileLoader.createSoundDatas(data, 'sfx');
-        });
+    function onCollectionLoaded() {
         $onHomeScreen = false;
     }
 
     onMount(async() => {
-        ipcRenderer.on("app-focused", () => {
-            fileLoader.refreshFiles();
+        window.addEventListener('keydown', e => {
+            if(e.key != "a") return;
+            soundStore.update(store => {
+                console.log(store.sounds);
+                return store;
+            });
         });
+        
+        fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        $onHomeScreen = false;
     });    
 </script>
 
 <main style={style}>
     <TopBar/>
     {#if $onHomeScreen}
-        <HomeScreen onFolderLoaded={onFolderLoaded}/>
+        <HomeScreen onCollectionLoaded={onCollectionLoaded}/>
     {:else}
         <SoundListView/>
+        <SoundContextMenu/>
     {/if}
 </main>
 

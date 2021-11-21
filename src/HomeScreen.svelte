@@ -5,51 +5,33 @@
     const { ipcRenderer } = window.require('electron');
     import { fly } from "svelte/transition";
     
-    export let onFolderLoaded;
-    let showCreateMenu = false;
-    let createFolderLocation = "";
-    let newCollectionName = "Bard Machine Collection";
+    export let onCollectionLoaded;
 
-    $: displayedFolderLabel = createFolderLocation != "" ? 
-        `"${maxSizeText(createFolderLocation, 90)}"` 
-        : 'Choose a location for your sound collection.';
-
-    $: collectionPath = fileLoader.collectionPath;
     $: style = `--bg: ${GlobalStyles.bg};`
         + `--topBarHeight: ${GlobalStyles.topBarSize};`
         + `--uiHighlightColor: ${GlobalStyles.uiHighlightColor};`
         + `--buttonColor: ${GlobalStyles.uiHighlightColor.saturate(0.3).darken(0.1)};`
         + `--buttonColorHover: ${GlobalStyles.uiHighlightColor.saturate(1.5).darken(0.25)};`;
 
-    function openExistingFolder(path) {
-        collectionPath.set(path);
-        onFolderLoaded(path);
-    }
-
-    function onNewFolderLocationSelected(path) {
-        createFolderLocation = path;
-    }
-
-    function createFolder() {
-        fileLoader.createFolders(createFolderLocation, newCollectionName, openExistingFolder);
-    }
-
-    function maxSizeText(input, max) {
-        if (input.length > max) {
-            return input.substring(0, max) + '...';
-        }
-        return input;
-    };
-
     onMount(async () => {
-        ipcRenderer.on('open-collection-directory', (e, path) => openExistingFolder(path));
-        ipcRenderer.on('selected-tocreate-directory', (e, path) => onNewFolderLocationSelected(path));
+        ipcRenderer.addListener('collection-open-path-selected', openCollection);
+        ipcRenderer.addListener('collection-create-path-selected', createCollection);
     })
 
     onDestroy(async () => {
-        ipcRenderer.removeListener('open-collection-directory', (e, path) => openExistingFolder(path));
-        ipcRenderer.removeListener('selected-tocreate-directory', (e, path) => onNewFolderLocationSelected(path));
+        ipcRenderer.removeListener('collection-open-path-selected', openCollection);
+        ipcRenderer.removeListener('collection-create-path-selected', createCollection);
     });
+
+    function createCollection(e, path) {
+        fileLoader.createCollection(path);
+        onCollectionLoaded();
+    }
+
+    function openCollection(e, path) {
+        fileLoader.openCollection(path);
+        onCollectionLoaded();
+    }
 </script>
 
 <div id="home-screen-view" style={style} class="custom-scroll">
@@ -57,43 +39,18 @@
         <img src="icon.svg" alt="Bard Machine Icon" class="center" id="logo"/>
         <h1 class="center">Bard Machine <span class="version">v0.5</span></h1>
         <div id="home-menu">
-            {#if !showCreateMenu}
             <ul id="home-options" in:fly="{{ x: -200 }}">
-                <li on:click="{() => ipcRenderer.send('dialog-open-folder')}">
+                <li on:click="{() => ipcRenderer.send('dialog-open-collection')}">
                     <i class="icon-font icon-folder"></i>
                     <h3>Open collection</h3>
                     <div class="description">Open an existing sound folder.</div>
                 </li>
-                <li on:click="{() => showCreateMenu = !showCreateMenu}">
+                <li on:click="{() => ipcRenderer.send('dialog-create-collection')}">
                     <i class="icon-font icon-new-folder"></i>
                     <h3>Create new collection</h3>
                     <div class="description">Create a new sound folder.</div>
                 </li>
             </ul>
-            {:else}
-            <div id="create-collection" in:fly="{{ x: 200 }}">
-                <div class="option">
-                    <label for="collection-name">
-                        <h4>Collection Name</h4>
-                        <div>Choose a name for your sound collection.</div>
-                    </label>
-                    <input type="text" name="collection-name" placeholder="Sound Collection Name" bind:value={newCollectionName}/>
-                </div>
-                <div class="option">
-                    <label for="folder-dialog">
-                        <h4>Location</h4>
-                        <div class="location">{displayedFolderLabel}</div>
-                    </label>
-                    <button name="folder-dialog" on:click={() => ipcRenderer.send('dialog-create-folder')}>Choose folder</button>
-                </div>
-                <div class="option last-row">
-                    <div class="back-btn">
-                        <div class="back" on:click={() => showCreateMenu = !showCreateMenu}>&lt; &nbsp;Go back</div>
-                    </div>
-                    <button class="big" class:active={createFolderLocation != ""} on:click="{() => { if(createFolderLocation != "") createFolder();}}">Create</button>
-                </div>
-            </div>
-            {/if}
         </div>
     </div>
 </div>
@@ -207,104 +164,6 @@
                             .description {
                                 font-size: 14px;
                                 color:  #fff6da;
-                            }
-                        }
-                    }
-                }
-
-                #create-collection {
-                    position: relative;
-                    width: 100%;
-
-                    h3 {
-                        margin-bottom: 10px;
-                        font-size: 20px;
-                    }
-
-                    .option {
-                        display: block;
-                        width: 100%;
-                        padding: 5px 0;
-
-                        label {
-                            margin: 0 0 8px 0;
-
-                            h4 {
-                                font-size: 16px;
-                                margin: 5px 0 0 1px;
-                                color: var(--uiHighlightColor, #fff);
-                            }
-
-                            div {
-                                color: rgba(255, 255, 255, 0.75);
-                                font-size: 13.5px;
-                                padding-left: 1px;
-
-                                &.location {
-                                    word-wrap: break-word;
-                                }
-                            }
-                        }
-
-                        input[type=text] {
-                            font-size: 15px;
-                            padding: 4px 8px;
-                            width: 100%;
-
-                            &::placeholder {
-                                font-style: italic;
-                            }
-                        }
-
-                        &.last-row {
-                            position: relative;
-                            height: 40px;
-                            width: 100%;
-                            margin-top: 15px;
-                            margin-bottom: -8px;
-
-                            button {
-                                position: absolute;
-                                top: 0;
-                                right: 0;
-                                width: 150px;
-                                background-color: #333;
-                                color: #888;
-                                font-weight: 400;
-                                cursor: default;
-
-                                &:hover {
-                                    background-color: #333;
-                                }
-
-                                &.active {
-                                    background-color: var(--buttonColor, #fff);
-                                    color: #000000dd;
-                                    font-weight: 500;
-                                    cursor: pointer;
-
-                                    &:hover {
-                                        background-color: var(--buttonColorHover, #fff)
-                                    }
-                                }
-                            }
-
-                            div {
-                                position: absolute;
-                                top: 4px;
-                                left: 0;
-                                width: 150px;
-
-                                .back {
-                                    cursor: pointer;
-                                    font-size: 15px;
-                                    opacity: 0.8;
-
-                                    &:hover {
-                                        opacity: 1;
-                                        text-decoration: underline;
-                                    }
-                                }
                             }
                         }
                     }

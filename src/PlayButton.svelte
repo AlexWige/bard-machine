@@ -9,6 +9,7 @@ import Color from "color";
     export let onRightClick = null;
     export let isBig = true;
     export let usePause = false;
+    export let domElement = {};
 
     $: style = `--mainColor: ${isPlaying ? 'white' : mainColor.hex()};`
         + `--iconColor: ${getIconColor()};`;
@@ -38,7 +39,7 @@ import Color from "color";
     }
 </script>
 
-<div class="play-button" class:small={!isBig} style="{style}" on:pointerdown="{onPointerDown}">
+<div bind:this={domElement} class="play-button" class:small={!isBig} style="{style}" on:pointerdown="{onPointerDown}">
     <i class="{iconClass} icon-font"></i>
 </div>
 

@@ -1,8 +1,8 @@
 <script>
     import GlobalStyles from "./GlobalStyles";
-    import SoundBlock from "./SoundBlock.svelte";
     import { hotKeys, isPromptActive } from "./hotkeyStore";
     import { onDestroy, onMount } from "svelte";
+    import { apis } from "./playerStore";
 
     $: isActive = $isPromptActive;
     let currentKeyAPI;
@@ -14,11 +14,17 @@
 
     onMount(async () => {
         window.addEventListener('keydown', onKeyDown);
+        apis.inputPrompt = api;
     });
 
     onDestroy(async () => {
         window.removeEventListener('keydown', onKeyDown);
     });
+
+    const api = {
+        show: show,
+        hide: hide
+    }
     
     export function show(keyAPI) {
         currentKeyAPI = keyAPI;
@@ -40,7 +46,6 @@
             case 40: return "↓"; 
             default: return name.toUpperCase();
         }
-        
     }
 
     function onKeyDown(e) {
@@ -68,15 +73,15 @@
     }
 </script>
 
-<div id="input-prompt" class="prompt" style={style}>
+<div id="input-prompt" class="prompt" style={style} on:click={hide}>
     <div class="prompt-box">
         <div id="input-prompt-touch-zone">
             <h2>Press any key to assign...</h2>
             <div class="key"></div>
         </div>
         <div class="prompt-options">
-            <a id="input-prompt-delete" on:pointerdown={unassignKey}>Unassign</a>
-            <a id="input-prompt-cancel" on:pointerdown={hide}>Go back</a>
+            <a id="input-prompt-delete" on:click={unassignKey}>Unassign</a>
+            <a id="input-prompt-cancel" on:click={hide}>Go back</a>
         </div>
     </div>
 </div>

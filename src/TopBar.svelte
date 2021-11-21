@@ -1,6 +1,7 @@
 <script>
     import { onMount } from "svelte";
     import { onHomeScreen } from "./playerStore";
+    import fileLoader from "./fileLoader";
     import GlobalStyles from "./GlobalStyles";
     const { ipcRenderer } = window.require('electron');
     let maximizedWindow = false;
@@ -19,7 +20,7 @@
     });
 
     function onClickTitle() {
-        console.log("hey");
+        fileLoader.saveCollection();
         onHomeScreen.set(true)
     }
 </script>
