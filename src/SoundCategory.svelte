@@ -10,10 +10,10 @@
 <div class="category {category}">
     <h2><i class="icon-font {category}-icon"></i>{_.upperFirst(category)}</h2>
     <div class="sound-box-container">
-        {#each $soundStore.sounds.filter(s => s.category == category) as sound}
-            <SoundBlock blockType="{category}" bind:soundData={sound}/>
+        {#each $soundStore.filter(s => s.data.category == category) as item (item.id)}
+            <SoundBlock bind:soundData={item.data} bind:id={item.id}/>
         {/each}
-        {#if $soundStore.sounds.filter(s => s.category == category).length == 0}
+        {#if $soundStore.filter(s => s.data.category == category).length == 0}
             <div class="empty-sound">No sound found in this category.</div>
         {/if}
         <AddSoundButton category={category}/>

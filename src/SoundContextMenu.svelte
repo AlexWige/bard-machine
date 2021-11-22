@@ -16,11 +16,6 @@
             show: show,
             hide: hide
         }
-        window.addEventListener('click', onWindowClick);
-    });
-
-    onDestroy(async() => {
-        window.removeEventListener('click', onWindowClick);
     });
     
     function show(_x, _y) { 
@@ -33,21 +28,10 @@
         visible = false;
     }
 
-    function onWindowClick(e) {
-        hide();
-    }
-
     function removeSelectedSounds() {
-        let selectedSounds = [];
-        soundStore.update(store => {
-            store.selectedSounds.forEach(sound => {
-                selectedSounds.push(sound);
-            });
-            return store;
-        })
-        console.log(selectedSounds);
+        let selectedSounds = soundStore.getSelectedItems();
         for (let i = selectedSounds.length - 1; i >= 0; i--) {
-            selectedSounds[i].removeSound();
+            soundStore.removeSound(selectedSounds[i].id);
         }
         fileLoader.saveCollection();
     }
@@ -60,7 +44,7 @@
     <div bind:this={domElement} style="top: {y}px; left: {x}px; {style}">
         <ul>
             <li>Stop</li>
-            <li on:pointerdown="{removeSelectedSounds}">Remove Sound</li>
+            <li on:click="{removeSelectedSounds}">Remove Sound</li>
         </ul>
     </div>
 {/if}

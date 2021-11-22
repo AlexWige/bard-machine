@@ -1,7 +1,6 @@
 <script>
     import PlayButton from './PlayButton.svelte';
     import VolumeSlider from './VolumeSlider.svelte';
-    import SoundContextMenu from './SoundContextMenu.svelte';
     import GlobalStyles from './GlobalStyles';
     import Color from 'color';
     import soundStore from './soundStore';
@@ -9,16 +8,19 @@
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
+    import { soundBlockAPIs } from "./soundBlockAPIs";
     
-    export let blockType = "music";
-    export let isPlaying = false;
+    export let id;
     export let soundData;
+    let isPlaying = false;
+    let isSelected = false;
 
-    // Dom Elements
-    let mainBox;
-    let volumeSlider;
-    let playButton;
-    let assignButton;
+    const dom = {
+        mainBox: undefined,
+        volumeSlider: undefined,
+        playButton: undefined,
+        assignButton: undefined
+    }
 
     let fader;
     let faderValue = 0;
@@ -26,7 +28,22 @@
 
     let keyCode = 0;
     let keyName = "";
-    let isSelected = false;
+
+    const api = {
+        getID: () => id,
+        isPlaying: () => isPlaying,
+        setPlaying: (play) => { isPlaying = play; },
+        isSelected: () => isSelected,
+        setSelected: (select) => { isSelected = select; },
+        toggleSelected: () => { isSelected = !isSelected; },
+        remove: remove,
+        clickEventCanSelect: (event) => {
+            return event.path.includes(dom.mainBox) 
+                && !event.path.includes(dom.volumeSlider)
+                && !event.path.includes(dom.playButton)
+                && !event.path.includes(dom.assignButton);
+        }
+    }
 
     const hotKeyAPI = {
         getKeyCode: () => { return keyCode },
@@ -41,29 +58,24 @@
             }
         }
     }
-
-    const selectionAPI = {
-        setSelected: (_selected) => { isSelected = _selected },
-        removeSound: removeSound
-    }
     
     onMount(async () => {
+        soundBlockAPIs.push(api);
+        sound.src = soundData.path;
         sound.onended = () => {
             if(soundData.category != 'effects') sound.play();
             else isPlaying = false;
         };
-        window.addEventListener('pointerup', onWindowClick);
     });
     
     onDestroy(async() => {
+        _.remove(soundBlockAPIs, api);
         sound.pause();
-        sound.src = '';
         sound.remove();
         fader.pause();
-        window.removeEventListener('pointerup', onWindowClick);
     });
     
-    $: mainColor = getMainColor(blockType);
+    $: mainColor = getMainColor(soundData.category);
 
     $: displayedKey = keyName;
     
@@ -75,25 +87,9 @@
     + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : GlobalStyles.bg.lighten(1).hex()};`
     + `--fontWeight: ${isPlaying ? '600' : '400'};`;
 
-    $: sound.volume = soundData.volume * $globalVolume * faderValue;
+    $: onVolumeChange(soundData.volume, $globalVolume, faderValue);
 
     $: onPlayingStateChange(isPlaying);
-
-    $: onSelectedStateChange(isSelected);
-
-    function onSelectedStateChange(selected) {
-        if(selected) {
-            soundStore.addSelectedSound(selectionAPI);
-        } else {
-            soundStore.removeSelectedSound(selectionAPI);
-        }
-    }
-
-    const playingSoundToken = {
-        isPlaying: () => { return isPlaying },
-        category: () => { return soundData.category },
-        setPlaying: (s) => { isPlaying = s; }
-    }
 
     function getMainColor(blockType) {
         switch (blockType) {
@@ -102,6 +98,10 @@
             case 'effects': return GlobalStyles.effects;
             default: return Color('#333');
         }
+    }
+
+    function onVolumeChange(dataVolume, globalVolume, faderValue) {
+        if(sound) sound.volume = dataVolume * globalVolume * faderValue;
     }
 
     function onPlayButtonRightClick() {
@@ -116,61 +116,23 @@
             if(soundData.category == 'music') {
                 soundStore.stopAllInCategory('music');
             }
-            soundStore.addPlayingSound(playingSoundToken);
             fader.start(1.0);
             if(soundData.category == 'effects') fader.skip();
             sound.play();
         }
         else {
-            soundStore.removePlayingSound(playingSoundToken);
             if(fader) fader.start(0.0);
         }
     }
 
     function onFaderEnd() {
-        if(faderValue <= 0) {
-            sound.pause();
-        }
+        if(faderValue <= 0) sound.pause();
     }
 
-    function onWindowClick(e) {
-        if(e.path.includes(mainBox)) {
-            // **** Inside box **** 
-            if(e.button == 0) {
-                // ** Left click
-                let changeSelection = !e.path.includes(playButton)
-                    && !e.path.includes(playButton)
-                    && !e.path.includes(assignButton);
-
-                if(changeSelection) {
-                    isSelected = !isSelected;
-                }
-            } else if(e.button == 2) {
-                // ** Right click
-                // isSelected = true;
-                apis.contextMenu?.show(e.clientX, e.clientY);
-            }
-            
-        } else {
-            // **** Outside box **** 
-            if(e.button == 0) {
-                // ** Left click
-                if(!e.ctrlKey) isSelected = false;
-            } else if(e.button == 2) {
-                // ** Right click
-                if(isSelected) {
-                    if(!soundStore.isSoundSelected(selectionAPI)) {
-                        isSelected = false;
-                    }
-                }
-            }
-        }
-    }
-
-    function removeSound() {
+    function remove() {
         isPlaying = false;
         isSelected = false;
-        soundStore.removeSound(soundData);
+        soundStore.removeSound(id);
     }
 
     function onAssignButtonPressed(e) {
@@ -178,15 +140,15 @@
     }
 </script>
 
-<div class="sound-block" class:small={!$bigBlocks} class:selected={isSelected} style="{style}">
-    <div class="main-box" bind:this={mainBox}>
+<div class="sound-block" class:small={!$bigBlocks} class:selected={isSelected} style="{style}" data-id={id}>
+    <div class="main-box" bind:this={dom.mainBox}>
         <div class="info-zone" class:active={isPlaying}>
             <div class="info-bar">
                 {soundData.title ?? ""}
             </div>
             <div class="volume">
                 <VolumeSlider 
-                    bind:domElement={volumeSlider} 
+                    bind:domElement={dom.volumeSlider} 
                     bind:isBig={$bigBlocks} 
                     mainColor={mainColor} 
                     bind:isPlaying={isPlaying} 
@@ -194,10 +156,10 @@
                 />
             </div>
         </div>       
-        <div bind:this={assignButton} class="assign-btn" on:click={onAssignButtonPressed}>{displayedKey}</div>         
+        <div bind:this={dom.assignButton} class="assign-btn" on:click={onAssignButtonPressed}>{displayedKey}</div>         
     </div>
     <PlayButton 
-        bind:domElement={playButton} 
+        bind:domElement={dom.playButton} 
         usePause= {soundData.category != 'effects'} 
         bind:isBig={$bigBlocks} 
         mainColor={mainColor} 

@@ -1,100 +1,89 @@
 import { writable } from "svelte/store";
+import { SoundStoreItem, getNewID } from "./soundStoreItem";
+import { SoundData } from "./soundData";
 import _ from 'lodash';
 
 function createSoundStore() {
-	const { subscribe, set, update } = writable([{
-        sounds : [],
-        playingSounds : [],
-        selectedSounds : []
-    }]);
+	const { subscribe, set, update } = writable([]);
 
 	return {
 		subscribe,
         update,
         set,
-        removeSound: (soundData) => {
+        addSounds: (paths, category) => {
             update(store => {
-                if(store.sounds.includes(soundData)) {
-                    _.remove(store.sounds, soundData);
-                }
+                paths.forEach(path => {
+                    const id = getNewID(store);
+                    const data = new SoundData(path, category);
+                    store.push(new SoundStoreItem(id, data));
+                });
+                return store;
+            });
+        },
+        removeSound: (id) => {
+            update(store => {
+                const soundWithID = store.find(s => s.id == id);
+                if(soundWithID) _.remove(store, soundWithID);
                 return store;
             })
         },
-		addPlayingSound: (token) => {
+        getItemByID: (id) => {
+            let item;
             update(store => {
-                if(!store.playingSounds.includes(token)) {
-                    store.playingSounds.push(token);
-                };
+                item = store.find(s => s.id == id);
                 return store;
             })
+            return item;
         },
-        removePlayingSound: (token) => {
+        getSelectedItems: () => {
+            let selected = [];
             update(store => {
-                if(store.playingSounds.includes(token)) {
-                    _.remove(store.playingSounds, token);
-                };
+                store.forEach(item => {
+                    if(item.api().isSelected()) selected.push(item);
+                });
                 return store;
             })
-        },
-		addSelectedSound: (selectionAPI) => {
-            update(store => {
-                if(!store.selectedSounds.includes(selectionAPI)) {
-                    store.selectedSounds.push(selectionAPI);
-                };
-                return store;
-            })
-        },
-        removeSelectedSound: (selectionAPI) => {
-            update(store => {
-                if(store.selectedSounds.includes(selectionAPI)) {
-                    _.remove(store.selectedSounds, selectionAPI);
-                };
-                return store;
-            })
-        },
-        isSoundSelected: (selectionAPI) => {
-            let isSelected = false;
-            update(store => {
-                isSelected = store.selectedSounds.includes(selectionAPI);
-                return store;
-            })
-            return isSelected;
+            return selected;
         },
         stopAllInCategory: (category) => {
             update(store => {
-                for (let i = store.playingSounds.length - 1; i >= 0; i--) {
-                    if(store.playingSounds[i].category() == category) {
-                        store.playingSounds[i].setPlaying(false);
+                store.forEach(sound => {
+                    if(sound.category == category) {
+                        sound.api().setPlaying(false);
                     }
-                }
+                });
                 return store;
-            })
+            });
         },
         stopAll: () => {
             update(store => {
-                for (let i = store.playingSounds.length - 1; i >= 0; i--) {
-                    store.playingSounds[i].setPlaying(false);
-                }
-                return store;
-            })
+                store.forEach(sound => {
+                    sound.api().setPlaying(false);
+                    return store;
+                });
+            });
         },
         toJSON: () => {
-            let result;
-            update(store => { 
-                result = JSON.stringify(store.sounds); 
+            let result = '';
+            update(store => {
+                const datas = store.map(s => s.data);
+                result = JSON.stringify(datas); 
                 return store; 
             })
             return result;
         },
         fromJSON: (jsonData) => {
-            let sounds = [];
+            let datas;
             try {
-                sounds = JSON.parse(jsonData);
+                datas = JSON.parse(jsonData);
             } catch {
-                sounds = [];
+                datas = [];
             }
-            update(store => { 
-                store.sounds = sounds; 
+            update(store => {
+                store = [];
+                for (let i = 0; i < datas.length; i++) {
+                    store.push(new SoundStoreItem(i, datas[i]))
+                }
                 return store; 
             })
         }

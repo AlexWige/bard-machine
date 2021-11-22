@@ -8,7 +8,9 @@
     import { onHomeScreen } from "./playerStore";
     import SoundContextMenu from "./SoundContextMenu.svelte";
     import soundStore from "./soundStore";
+    import SelectionManager from "./SelectionManager.svelte";
     const { ipcRenderer } = window.require('electron');
+    import { soundBlockAPIs } from './soundBlockAPIs';
 
     $: style = `--bg: ${GlobalStyles.bg};`;
     $: collectionPath = fileLoader.collectionPath;
@@ -21,9 +23,10 @@
         window.addEventListener('keydown', e => {
             if(e.key != "a") return;
             soundStore.update(store => {
-                console.log(store.sounds);
+                console.log(store);
                 return store;
             });
+            console.log(soundBlockAPIs);
         });
         
         fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
@@ -38,6 +41,7 @@
     {:else}
         <SoundListView/>
         <SoundContextMenu/>
+        <SelectionManager/>
     {/if}
 </main>
 

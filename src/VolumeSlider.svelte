@@ -14,6 +14,8 @@
 
     $: iconClass = getVolumeIconClass(volume);
 
+    $: updateVolume(volume);
+
     $: style = `--barColor: ${isPlaying ? Color('white') : mainColor.hex()};`;
 
     onMount(async() => {
@@ -56,9 +58,13 @@
 
     function moveKnob(vol) {
         vol = Math.round(vol * 1000) / 1000;
-        activeBar.style.width = vol * 100 + '%';
         volume = vol;
+        updateVolume(volume);
         onChange(vol);
+    }
+
+    function updateVolume(volume) {
+        if(activeBar) activeBar.style.width = volume * 100 + '%';
     }
 </script>
 

@@ -35,21 +35,7 @@ function refreshCollection() {
 }
 
 function addSounds(paths, category) {
-    soundStore.update(store => {
-        paths.forEach(path => {
-            const id = getNewID(store.sounds);
-            console.log(id);
-            store.sounds.push(new SoundData(id, path, category));
-        });
-        return store;
-    });
-}
-
-function getNewID(sounds) {
-    const ids = sounds.map(s => s.id);
-    for(let i = 0; i < ids.length + 1; i++) {
-        if(ids.indexOf(i) == -1) return i;
-    }
+    soundStore.addSounds(paths, category);
 }
 
 export default { 
