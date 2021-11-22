@@ -8,7 +8,6 @@
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
-    import { soundBlockAPIs } from "./soundBlockAPIs";
     
     export let id;
     export let soundData;
@@ -16,6 +15,7 @@
     let isSelected = false;
 
     const dom = {
+        soundBlock: undefined,
         mainBox: undefined,
         volumeSlider: undefined,
         playButton: undefined,
@@ -36,13 +36,22 @@
         isSelected: () => isSelected,
         setSelected: (select) => { isSelected = select; },
         toggleSelected: () => { isSelected = !isSelected; },
-        remove: remove,
         clickEventCanSelect: (event) => {
             return event.path.includes(dom.mainBox) 
                 && !event.path.includes(dom.volumeSlider)
                 && !event.path.includes(dom.playButton)
                 && !event.path.includes(dom.assignButton);
-        }
+        },
+        stop: () => {
+            if(!isPlaying) sound.currentTime = 0;
+            else {
+                isPlaying = false;
+                fader.onNextEnd(() => {
+                    sound.currentTime = 0;
+                });
+            }
+        },
+        getDOM: () => dom,
     }
 
     const hotKeyAPI = {
@@ -53,6 +62,7 @@
             if(soundData.category == 'effects') {
                 isPlaying = true;
                 sound.currentTime = 0;
+                fader.skipTo(1);
             } else {
                 isPlaying = !isPlaying;
             }
@@ -60,7 +70,7 @@
     }
     
     onMount(async () => {
-        soundBlockAPIs.push(api);
+        soundStore.setSoundAPI(id, api);
         sound.src = soundData.path;
         sound.onended = () => {
             if(soundData.category != 'effects') sound.play();
@@ -69,7 +79,6 @@
     });
     
     onDestroy(async() => {
-        _.remove(soundBlockAPIs, api);
         sound.pause();
         sound.remove();
         fader.pause();
@@ -104,35 +113,34 @@
         if(sound) sound.volume = dataVolume * globalVolume * faderValue;
     }
 
-    function onPlayButtonRightClick() {
-        sound.currentTime = 0;
-    }
-
     function onPlayingStateChange(play) {
+        let skipFade = false;
+
         if(play) {
             if(soundData.category == 'effects') {
                 sound.currentTime = 0;
+                skipFade = true;
             }
             if(soundData.category == 'music') {
-                soundStore.stopAllInCategory('music');
+                const otherPlayingSounds = soundStore.getPlayingSoundsInCategory('music').filter(s => s.id != id);
+                otherPlayingSounds.forEach(sound => {
+                    sound.api.setPlaying(false);
+                });
+                if(otherPlayingSounds.length == 0 && sound.currentTime == 0) skipFade = true;
             }
             fader.start(1.0);
-            if(soundData.category == 'effects') fader.skip();
             sound.play();
         }
         else {
-            if(fader) fader.start(0.0);
+            fader?.start(0.0);
+            if(soundData.category == 'effects') skipFade = true;
         }
+
+        if(skipFade) fader?.skip();
     }
 
     function onFaderEnd() {
         if(faderValue <= 0) sound.pause();
-    }
-
-    function remove() {
-        isPlaying = false;
-        isSelected = false;
-        soundStore.removeSound(id);
     }
 
     function onAssignButtonPressed(e) {
@@ -140,7 +148,7 @@
     }
 </script>
 
-<div class="sound-block" class:small={!$bigBlocks} class:selected={isSelected} style="{style}" data-id={id}>
+<div class="sound-block" bind:this={dom.soundBlock} class:small={!$bigBlocks} class:selected={isSelected} style="{style}" data-id={id}>
     <div class="main-box" bind:this={dom.mainBox}>
         <div class="info-zone" class:active={isPlaying}>
             <div class="info-bar">
@@ -163,8 +171,7 @@
         usePause= {soundData.category != 'effects'} 
         bind:isBig={$bigBlocks} 
         mainColor={mainColor} 
-        bind:isPlaying={isPlaying} 
-        onRightClick={onPlayButtonRightClick}
+        bind:isPlaying={isPlaying}
     />
     <Fader 
         bind:this={fader} 

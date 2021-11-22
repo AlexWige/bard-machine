@@ -23,6 +23,11 @@
         fileLoader.saveCollection();
         onHomeScreen.set(true)
     }
+
+    function onCloseButton(e) {
+        ipcRenderer.send('close-window');
+        fileLoader.saveCollection();
+    }
 </script>
 
 <div id="top-bar" style={style}>
@@ -31,7 +36,7 @@
         <img src="{hoveringHomeButton ? 'icon_color_1.svg' : 'icon_grey_1.svg'}" id="icon" alt="icon"> <div id="title">Bard Machine</div>
     </div>
     <div id="command-buttons">
-        <div class="button close" on:pointerup="{(e) => ipcRenderer.send('close-window')}" >
+        <div class="button close" on:pointerup="{onCloseButton}" >
             <img src="top-bar/title-bar-btn-03-close.svg" alt="Close window">
         </div>
         <div class="button" on:pointerup="{(e) => ipcRenderer.send('maximize-window')}" >

@@ -35,30 +35,39 @@ function createSoundStore() {
             })
             return item;
         },
+        setSoundAPI: (id, api) => {
+            update(store => {
+                const item = store.find(s => s.id == id);
+                if(item) item.api = api;
+                return store;
+            })
+        },
         getSelectedItems: () => {
             let selected = [];
             update(store => {
                 store.forEach(item => {
-                    if(item.api().isSelected()) selected.push(item);
+                    if(item.api.isSelected()) selected.push(item);
                 });
                 return store;
             })
             return selected;
         },
-        stopAllInCategory: (category) => {
+        getPlayingSoundsInCategory: (category) => {
+            let sounds = [];
             update(store => {
                 store.forEach(sound => {
-                    if(sound.category == category) {
-                        sound.api().setPlaying(false);
+                    if(sound.data.category == category && sound.api.isPlaying()) {
+                        sounds.push(sound);
                     }
                 });
                 return store;
             });
+            return sounds;
         },
         stopAll: () => {
             update(store => {
                 store.forEach(sound => {
-                    sound.api().setPlaying(false);
+                    sound.api.setPlaying(false);
                     return store;
                 });
             });

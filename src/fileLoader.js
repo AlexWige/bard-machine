@@ -21,7 +21,9 @@ function saveCollection() {
     const jsonData = soundStore.toJSON();
     const path = collectionPath.get();
     if(!path || path == '') return;
-    fs.writeFile(path, jsonData, "utf8", () => console.log("Collection saved!"));
+    fs.writeFile(path, jsonData, "utf8", () => { 
+        // console.log("Collection saved!");
+    });
 }
 
 function refreshCollection() {

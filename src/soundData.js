@@ -6,7 +6,6 @@ export class SoundData {
         this.category = category;
         this.volume = category == 'music' ? 0.6 : 0.8;
         this.title = this.processTitle(path);
-        this.isPlaying = false;
     }
 
     processTitle(path) {

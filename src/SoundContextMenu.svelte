@@ -10,6 +10,10 @@
     export let visible = false;
     
     let domElement;
+    let selectedSoundsOnShow;
+
+    $: selectedSoundsNumber = selectedSoundsOnShow ? selectedSoundsOnShow.length : 0;
+    $: plural = selectedSoundsOnShow?.length > 1;
 
     onMount(async() => {
         apis.contextMenu = {
@@ -22,6 +26,7 @@
         x = _x;
         y = _y;
         visible = true;
+        selectedSoundsOnShow = soundStore.getSelectedItems();
     }
 
     function hide() {
@@ -36,15 +41,22 @@
         fileLoader.saveCollection();
     }
 
-    $: style = `--bg: ${GlobalStyles.bg.lighten(1.2)};`;
+    function stopSelectedSounds() {
+        let selectedSounds = soundStore.getSelectedItems();
+        selectedSounds.forEach(sound => {
+            sound.api.stop();
+        });
+    }
+
+    $: style = `--bg: ${GlobalStyles.bg.darken(0.2)};`;
 
 </script>
 
-{#if visible}
+{#if visible && selectedSoundsNumber > 0}
     <div bind:this={domElement} style="top: {y}px; left: {x}px; {style}">
         <ul>
-            <li>Stop</li>
-            <li on:click="{removeSelectedSounds}">Remove Sound</li>
+            <li on:click={stopSelectedSounds}>Stop</li>
+            <li on:click={removeSelectedSounds}>Remove Sound{#if plural}s{/if}</li>
         </ul>
     </div>
 {/if}

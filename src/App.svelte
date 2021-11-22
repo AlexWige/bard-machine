@@ -4,16 +4,17 @@
     import SoundListView from "./SoundListView.svelte";
     import HomeScreen from "./HomeScreen.svelte";
     import fileLoader from "./fileLoader";
-    import { onMount } from "svelte";
+    import { onDestroy, onMount } from "svelte";
     import { onHomeScreen } from "./playerStore";
     import SoundContextMenu from "./SoundContextMenu.svelte";
     import soundStore from "./soundStore";
     import SelectionManager from "./SelectionManager.svelte";
     const { ipcRenderer } = window.require('electron');
-    import { soundBlockAPIs } from './soundBlockAPIs';
 
     $: style = `--bg: ${GlobalStyles.bg};`;
     $: collectionPath = fileLoader.collectionPath;
+    
+    let saveInterval;
 
     function onCollectionLoaded() {
         $onHomeScreen = false;
@@ -26,12 +27,20 @@
                 console.log(store);
                 return store;
             });
-            console.log(soundBlockAPIs);
         });
+
+        // Autosave collection every 30s
+        saveInterval = setInterval(() => {
+            fileLoader.saveCollection();
+        }, 30000);
         
         fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
         $onHomeScreen = false;
-    });    
+    });
+
+    onDestroy(async() => {
+        clearInterval(saveInterval);
+    });
 </script>
 
 <main style={style}>

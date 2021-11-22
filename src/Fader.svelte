@@ -8,6 +8,7 @@
     let to = 1;
     let isActive = false;
     let tickInterval;
+    let onNextReachValue;
 
     export function start(toValue) {
         if(value == toValue) return;
@@ -19,6 +20,10 @@
         }
     }
 
+    export function onNextEnd(callback) {
+        onNextReachValue = callback;
+    }
+
     export function pause() {
         if(isActive) {
             if(tickInterval) clearInterval(tickInterval);
@@ -28,7 +33,13 @@
 
     export function skip() {
         value = to;
+        onNextReachValue = null;
         pause();
+    }
+
+    export function skipTo(_value) {
+        to = _value;
+        skip();
     }
 
     function tick() {
@@ -38,6 +49,8 @@
             if (value >= to) {
                 pause();
                 if(onEnd) onEnd();
+                if(onNextReachValue) onNextReachValue();
+                onNextReachValue = null;
             }
         } else {
             value -= speed * 0.03 * 1.5; // HIGHER SPEED ON FADE DOWN
@@ -45,6 +58,8 @@
             if (value <= to) {
                 pause();
                 if(onEnd) onEnd();
+                if(onNextReachValue) onNextReachValue();
+                onNextReachValue = null;
             }
         }
     }
