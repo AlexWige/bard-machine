@@ -10,6 +10,9 @@ function createSoundStore() {
 		subscribe,
         update,
         set,
+        closeCollection: () => {
+            update(store => []);
+        },
         addSounds: (paths, category) => {
             update(store => {
                 paths.forEach(path => {

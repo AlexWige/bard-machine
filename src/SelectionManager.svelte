@@ -20,6 +20,8 @@
     function onLeftClick(e) {
         apis.contextMenu.hide();
         const soundBlock = getClickedSoundBlock(e.path);
+        if(soundBlock) 
+            console.log(soundBlock);
         
         if(!e.ctrlKey && !e.shiftKey) {
             if(!soundBlock || !(soundBlock.api.isSelected() && soundStore.getSelectedItems().length == 1)) {

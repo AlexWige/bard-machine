@@ -9,10 +9,8 @@
     import SoundContextMenu from "./SoundContextMenu.svelte";
     import soundStore from "./soundStore";
     import SelectionManager from "./SelectionManager.svelte";
-    const { ipcRenderer } = window.require('electron');
 
     $: style = `--bg: ${GlobalStyles.bg};`;
-    $: collectionPath = fileLoader.collectionPath;
     
     let saveInterval;
 
@@ -26,16 +24,18 @@
             soundStore.update(store => {
                 console.log(store);
                 return store;
-            });
+            })
         });
 
         // Autosave collection every 30s
         saveInterval = setInterval(() => {
-            fileLoader.saveCollection();
+            if(fileLoader.collectionPath != '' && !onHomeScreen)
+                fileLoader.saveCollection();
         }, 30000);
         
-        fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
-        $onHomeScreen = false;
+        // On Dev
+        // fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        // $onHomeScreen = false;
     });
 
     onDestroy(async() => {

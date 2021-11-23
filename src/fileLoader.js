@@ -17,6 +17,11 @@ function openCollection(path) {
     refreshCollection();
 }
 
+function closeCollection() {
+    soundStore.closeCollection();
+    collectionPath.set('');
+}
+
 function saveCollection() {
     const jsonData = soundStore.toJSON();
     const path = collectionPath.get();
@@ -44,5 +49,6 @@ export default {
     openCollection,
     createCollection,
     addSounds,
-    saveCollection
+    saveCollection,
+    closeCollection
 };

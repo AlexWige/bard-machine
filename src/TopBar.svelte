@@ -3,6 +3,7 @@
     import { onHomeScreen } from "./playerStore";
     import fileLoader from "./fileLoader";
     import GlobalStyles from "./GlobalStyles";
+    import soundStore from "./soundStore";
     const { ipcRenderer } = window.require('electron');
     let maximizedWindow = false;
 
@@ -21,6 +22,7 @@
 
     function onClickTitle() {
         fileLoader.saveCollection();
+        fileLoader.closeCollection();
         onHomeScreen.set(true)
     }
 
