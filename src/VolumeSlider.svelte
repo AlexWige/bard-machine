@@ -30,6 +30,8 @@
     }
 
     function onPointerDown(e) {
+        if(e.pointerType == "mouse" && e.button != 0) return;
+        
         onPointerMove(e);
         if(e.pointerType == "mouse") {
             window.addEventListener('pointermove', onPointerMove);

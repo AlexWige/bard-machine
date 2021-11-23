@@ -5,10 +5,11 @@
     import HomeScreen from "./HomeScreen.svelte";
     import fileLoader from "./fileLoader";
     import { onDestroy, onMount } from "svelte";
-    import { onHomeScreen } from "./playerStore";
+    import { apis, onHomeScreen } from "./playerStore";
     import SoundContextMenu from "./SoundContextMenu.svelte";
     import soundStore from "./soundStore";
     import SelectionManager from "./SelectionManager.svelte";
+    import Modal from "./Modal/Modal.svelte";
 
     $: style = `--bg: ${GlobalStyles.bg};`;
     
@@ -25,6 +26,10 @@
             //     console.log(store);
             //     return store;
             // })
+            // apis.modal.show("Hey les potes !", [{ name: "yes", onClick: () => {
+            //     $onHomeScreen = true;
+            //     apis.modal.hide();
+            // }}]);
         });
 
         // Autosave collection every 30s
@@ -34,8 +39,8 @@
         }, 30000);
         
         // On Dev
-        // fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
-        // $onHomeScreen = false;
+        fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        $onHomeScreen = false;
     });
 
     onDestroy(async() => {
@@ -52,6 +57,8 @@
         <SoundContextMenu/>
         <SelectionManager/>
     {/if}
+
+    <Modal/>
 </main>
 
 <style lang="scss">

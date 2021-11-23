@@ -110,10 +110,12 @@
             position: fixed;
             z-index: 1200;
             left: 50%;
-            margin-left: -200px;
-            top: 50px;
-            height: 300px;
-            width: 400px;
+            top: 40%;
+            width: 90%;
+            height: 90%;
+            max-width: 400px;
+            max-height: 250px;
+            transform: translate(-50%, -50%);
             background-color: var(--boxBg, #ccc);
             box-shadow: 0 0 20px 1px rgba(0, 0, 0, 0.25);
         }
