@@ -21,10 +21,10 @@
     onMount(async() => {
         window.addEventListener('keydown', e => {
             if(e.key != "a") return;
-            soundStore.update(store => {
-                console.log(store);
-                return store;
-            })
+            // soundStore.update(store => {
+            //     console.log(store);
+            //     return store;
+            // })
         });
 
         // Autosave collection every 30s

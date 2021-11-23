@@ -37,13 +37,21 @@
 
     function processKeyName(code, name) {
         switch (code) {
-            case  8: return "←"; 
+            case  8: return "⌫"; 
+            case  9: return "⇥"; 
             case 13: return "↵"; 
+            case 16: return "⇧"; 
+            case 17: return "Ctl"; 
+            case 18: return "Alt"; 
+            case 20: return "⇪"; 
             case 32: return "␣"; 
+            case 33: return "⇞"; 
+            case 34: return "⇟"; 
             case 37: return "←"; 
             case 38: return "↑"; 
             case 39: return "→"; 
             case 40: return "↓"; 
+            case 46: return "Del"; 
             default: return name.toUpperCase();
         }
     }

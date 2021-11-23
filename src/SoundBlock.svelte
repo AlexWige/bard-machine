@@ -28,6 +28,7 @@
 
     let keyCode = 0;
     let keyName = "";
+    $: keyFontSize = getAssignKeySize(keyName.length, $bigBlocks); 
 
     const api = {
         getID: () => id,
@@ -109,6 +110,20 @@
         }
     }
 
+    function getAssignKeySize(keyNameLength, bigBlocks) {
+        if(bigBlocks) {
+            if(keyNameLength <= 1) return '25px';
+            else if(keyNameLength == 2) return '21px';
+            else if(keyNameLength == 3) return '18px';
+            else return '13px';
+        } else {
+            if(keyNameLength <= 1) return '17.5px';
+            else if(keyNameLength == 2) return '15.5px';
+            else if(keyNameLength == 3) return '13.5px';
+            else return '10px';
+        }
+    }
+
     function onVolumeChange(dataVolume, globalVolume, faderValue) {
         if(sound) sound.volume = dataVolume * globalVolume * faderValue;
     }
@@ -164,7 +179,9 @@
                 />
             </div>
         </div>       
-        <div bind:this={dom.assignButton} class="assign-btn" on:click={onAssignButtonPressed}>{displayedKey}</div>         
+        <div bind:this={dom.assignButton} class="assign-btn" on:click={onAssignButtonPressed} style="font-size: {keyFontSize}">
+            {displayedKey}
+        </div>         
     </div>
     <PlayButton 
         bind:domElement={dom.playButton} 
@@ -247,6 +264,7 @@
                 cursor: pointer;
                 display: flex;
                 justify-content: center;
+                overflow: hidden;
 
                 &:hover {
                     transition: 0.03s;
