@@ -1,5 +1,5 @@
-<p align="center">=
-    <img alt="Medusa" src="./public/icon.svg" width="100" />
+<p align="center">
+    <img alt="Bard Machine" src="./public/icon.svg" width="100" />
 </p>
 <h1 align="center">
   Bard Marchine
