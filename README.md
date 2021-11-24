@@ -1,5 +1,10 @@
-# Bard Machine
+<p align="center">=
+    <img alt="Medusa" src="./public/icon.svg" width="100" />
+</p>
+<h1 align="center">
+  Bard Marchine
+</h1>
 
 A straightforward, free and open source sound app for tabletop rpg.
 
-Build on svelte and electron.
+Built on svelte and electron.
