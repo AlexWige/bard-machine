@@ -113,6 +113,7 @@ export function onDragEnd(e) {
     }
     currentSiblings = [];
     if(currentAPI.onDragEnd) currentAPI.onDragEnd();
+    dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
 }
 
 /****** UTILITY ******/
