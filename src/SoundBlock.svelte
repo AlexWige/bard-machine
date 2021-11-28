@@ -8,6 +8,10 @@
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
+    import * as reorderableManager from "./Managers/ReorderablesManager";
+    import * as selectionManager from "./Managers/SelectionManager";
+    import * as contextMenuManager from "./Managers/ContextMenuManager";
+    import fileLoader from "./fileLoader";
     
     export let id;
     export let soundData;
@@ -34,25 +38,75 @@
         getID: () => id,
         isPlaying: () => isPlaying,
         setPlaying: (play) => { isPlaying = play; },
-        isSelected: () => isSelected,
-        setSelected: (select) => { isSelected = select; },
-        toggleSelected: () => { isSelected = !isSelected; },
-        clickEventCanSelect: (event) => {
-            return event.path.includes(dom.mainBox) 
-                && !event.path.includes(dom.volumeSlider)
-                && !event.path.includes(dom.playButton)
-                && !event.path.includes(dom.assignButton);
-        },
-        stop: () => {
-            if(!isPlaying) sound.currentTime = 0;
-            else {
-                isPlaying = false;
-                fader.onNextEnd(() => {
-                    sound.currentTime = 0;
-                });
-            }
-        },
+        stop: () => stopSound,
         getDOM: () => dom,
+    }
+
+    const selectableAPI = {
+        getNode: () => dom.soundBlock,
+        getSelectionGroup: () => 'soundblocks',
+        onSelect: () => isSelected = true,
+        onDeselect: () => isSelected = false
+    }
+
+    const reorderableAPI = {
+        getNode: () => dom.soundBlock,
+        putAfter: node => {
+            if(!node.dataset || !node.dataset.id) return;
+            soundStore.update(store => {
+                const targetSound = soundStore.getItemByID(node.dataset.id);
+                return reorderableManager.moveArrayItemAfter(store, soundStore.getItemByID(id), targetSound);
+            });
+            fileLoader.saveCollection();
+        },
+        putBefore: node => {
+            if(!node.dataset || !node.dataset.id) return;
+            soundStore.update(store => {
+                const targetSound = soundStore.getItemByID(node.dataset.id);
+                return reorderableManager.moveArrayItemBefore(store, soundStore.getItemByID(id), targetSound);
+            });
+            fileLoader.saveCollection();
+        }
+    }
+
+    const contextMenuAPI = {
+        getNode: () => dom.soundBlock,
+        getOptions: () => [
+            { 
+                id: 'stop-sound-block',
+                solo: 'Stop',
+                multiple: 'Stop sounds',
+                onClickEach: () => stopSound()
+            },
+            { 
+                id: 'rename-sound-block',
+                solo: 'Rename...',
+                onClickEach: () => {
+                    apis.modal.show(
+                        "Rename sound", 
+                        [
+                            { name: "Cancel", hotkey: 'Escape', onClick: () => apis.modal.hide() },
+                            { name: "OK", hotkey: 'Enter', onClick: () => {
+                                let newName = apis.modal.getInputValue();
+                                soundStore.renameSound(id, newName);
+                                apis.modal.hide();
+                                fileLoader.saveCollection();
+                            }}
+                        ],
+                        { value: soundData.title, placeHolder: 'Enter sound name...' }
+                    );
+                }
+            },
+            { 
+                id: 'remove-sound-block',
+                solo: 'Remove',
+                multiple: 'Remove sounds',
+                onClickEach: () => {
+                    soundStore.removeSound(id);
+                },
+                saveAfter: true
+            }
+        ]
     }
 
     const hotKeyAPI = {
@@ -63,7 +117,7 @@
             if(soundData.category == 'effects') {
                 isPlaying = true;
                 sound.currentTime = 0;
-                fader.skipTo(1);
+                fader.skipToOne();
             } else {
                 isPlaying = !isPlaying;
             }
@@ -71,6 +125,9 @@
     }
     
     onMount(async () => {
+        reorderableManager.register(reorderableAPI);
+        selectionManager.register(selectableAPI);
+        contextMenuManager.register(contextMenuAPI);
         soundStore.setSoundAPI(id, api);
         sound.src = soundData.path;
         sound.onended = () => {
@@ -80,6 +137,9 @@
     });
     
     onDestroy(async() => {
+        reorderableManager.unregister(reorderableAPI);
+        selectionManager.unregister(selectableAPI);
+        contextMenuManager.unregister(contextMenuAPI);
         sound.pause();
         sound.remove();
         fader.pause();
@@ -90,6 +150,7 @@
     $: displayedKey = keyName;
     
     $: style = `--mainColor: ${mainColor.hex()};`
+    + `--mainColorLighter: ${mainColor.lighten(0.1)};`
     + `--mainBoxBG: ${isPlaying ? mainColor.hex() : GlobalStyles.bg.lighten(0.5).hex()};`
     + `--mainBoxBGHover: ${isPlaying ? mainColor.hex() : GlobalStyles.bg.lighten(0.65).hex()};`
     + `--mainBoxBGSelected: ${isPlaying ? mainColor.lighten(0.05).hex() : GlobalStyles.bg.lighten(1.2).hex()};`
@@ -128,6 +189,16 @@
         if(sound) sound.volume = dataVolume * globalVolume * faderValue;
     }
 
+    function stopSound() {
+        if(!isPlaying) sound.currentTime = 0;
+        else {
+            isPlaying = false;
+            fader.onNextEnd(() => {
+                sound.currentTime = 0;
+            });
+        }
+    }
+
     function onPlayingStateChange(play) {
         let skipFade = false;
 
@@ -163,7 +234,11 @@
     }
 </script>
 
-<div class="sound-block" bind:this={dom.soundBlock} class:small={!$bigBlocks} class:selected={isSelected} style="{style}" data-id={id}>
+<div 
+    class="sound-block" class:small={!$bigBlocks} class:selected={isSelected} style="{style}"
+    bind:this={dom.soundBlock}
+    data-id={id}
+>
     <div class="main-box" bind:this={dom.mainBox}>
         <div class="info-zone" class:active={isPlaying}>
             <div class="info-bar">
@@ -179,7 +254,7 @@
                 />
             </div>
         </div>       
-        <div bind:this={dom.assignButton} class="assign-btn" on:click={onAssignButtonPressed} style="font-size: {keyFontSize}">
+        <div bind:this={dom.assignButton} data-blockselection={true} class="assign-btn" on:click={onAssignButtonPressed} style="font-size: {keyFontSize}">
             {displayedKey}
         </div>         
     </div>
@@ -201,9 +276,13 @@
     .sound-block {
         font-family: 'Poppins', sans-serif;
         position: relative;
-        margin: 15px 0;
+        padding: 8px 0;
         height: 52px;
         width: 100%;
+
+        :global(.drop-preview-bar) {
+            border-color: var(--mainColorLighter, white) !important;
+        }
 
         &:first-of-type {
             margin-top: 0;
@@ -223,8 +302,8 @@
 
         .main-box {
             position: absolute;
-            top: 0;
-            bottom: 0;
+            top: 8px;
+            bottom: 8px;
             left: 30px;
             right: 0;
             user-select: none;
@@ -305,10 +384,12 @@
 
         &.small {
             height: 30px;
-            margin: 1px 0;
+            padding: 1px 0;
 
             .main-box {
                 left: 0;
+                top: 1px;
+                bottom: 0;
             }
 
             .assign-btn {

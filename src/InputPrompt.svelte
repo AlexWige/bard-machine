@@ -64,10 +64,10 @@
                 hide();
                 return;
             }
-            if(e.keyCode == 144) return;
+            if(e.keyCode == 17 || e.keyCode == 16 || e.keyCode == 144) return;
             hotKeys.addHotKey(e.keyCode, keyName, currentKeyAPI);
             hide();
-        } else {
+        } else if(!apis.modal.isVisible()) {
             const api = hotKeys.findAPI(e.keyCode);
             if(api) api.triggerSound();
         }

@@ -2,12 +2,13 @@
     import GlobalStyles from "../GlobalStyles";
     import ModalOption from "./ModalOption.svelte";
     import ModalInput from "./ModalInput.svelte";
-    import { onMount, onDestroy } from "svelte";
+    import { tick, onMount, onDestroy } from "svelte";
     import { apis } from "../playerStore";
 
     $: style = `--bgCache: ${GlobalStyles.bg.darken(0.5).fade(0.4)};`
             + `--boxBg: ${GlobalStyles.bg.lighten(0.6)};`
-            + `--topBarHeight: ${GlobalStyles.topBarSize};`;
+            + `--topBarHeight: ${GlobalStyles.topBarSize};`
+            + `--display: ${visible ? 'block' : 'none'};`;
 
     export let visible = false;
     export let text = "This is a modal";
@@ -16,16 +17,19 @@
         // { 
         //     name: "Close",
         //     onClick: () => hide(),
-        //     backgroundColor: '#d03d3d'
+        //     backgroundColor: '#d03d3d',
+        //     isDefault: false
         // }
     ];
     export let inputValue = '';
     export let inputPlaceholder = 'Enter your text here...';
+    let inputField;
 
     export const api = {
         show: show,
         hide: hide,
-        getInputValue: () => inputValue
+        getInputValue: () => inputValue,
+        isVisible: () => visible
     };
 
     onMount(async () => {
@@ -36,27 +40,29 @@
         visible = false;
     }
 
-    export function show(_text, _options = null, _hasInputField = false, _inputFieldValue = null, _inputFieldPlaceholder = null) {
+    export function show(_text, _options = null, _inputField = null) {
+        visible = true;
         text = _text;
         if(options) options = _options;
-        hasInputField = _hasInputField;
-        if(_hasInputField) {
-            if(_inputFieldValue) inputValue = _inputFieldValue;
-            if(_inputFieldPlaceholder) inputPlaceholder = _inputFieldValue;
+        hasInputField = (_inputField != null);
+        if(hasInputField) {
+            if(_inputField.value) inputValue = _inputField.value;
+            if(_inputField.placeholder) inputPlaceholder = _inputField.placeHolder;
+            (async () => {
+                await tick();
+                inputField.focus();
+            })();
         }
-        visible = true;
     }
 </script>
 
-
-{#if visible}
-<div id="modal" style={style}>
+<div id="modal"style={style}>
     <div class="modal-content">
         <div class="main-text">
             {text}
         </div>
         {#if hasInputField}
-            <ModalInput bind:value={inputValue} bind:placeholder={inputPlaceholder}/>
+            <ModalInput bind:this={inputField} bind:value={inputValue} bind:placeholder={inputPlaceholder}/>
         {/if}
         <ul class="options">
             {#if !options || options.length == 0}
@@ -69,11 +75,10 @@
         </ul>
     </div>
 </div>
-{/if}
 
 <style lang="scss">
     #modal {
-        display: block;
+        display: var(--display, none);
         background-color: var(--bgCache, #333333cc);
         position: fixed;
         top: var(--topBarHeight, 25px);

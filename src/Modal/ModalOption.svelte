@@ -1,9 +1,24 @@
 <script>
+    import { onDestroy, onMount } from "svelte";
+
     export let name = "Option";
     export let onClick = () => console.log("Clicked " + name);
     export let backgroundColor = undefined;
-
+    export let hotkey = undefined;
+    
     $: style = `--bgColor: ${backgroundColor ? backgroundColor : 'rgba(255, 255, 255, 0.1)'}`;
+
+    onMount(async() => {
+        window.addEventListener('keydown', onKeyDown);
+    });
+
+    onDestroy(async() => {
+        window.removeEventListener('keydown', onKeyDown);
+    });    
+
+    function onKeyDown(e) {
+        if(e.key == hotkey) onClick();
+    }
 </script>
 
 <li on:click="{onClick}" style="{style}">{name}</li>

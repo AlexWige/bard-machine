@@ -5,12 +5,10 @@
     import HomeScreen from "./HomeScreen.svelte";
     import fileLoader from "./fileLoader";
     import { onDestroy, onMount } from "svelte";
-    import { apis, onHomeScreen } from "./playerStore";
-    import SoundContextMenu from "./SoundContextMenu.svelte";
-    import soundStore from "./soundStore";
-    import SelectionManager from "./SelectionManager.svelte";
+    import { onHomeScreen } from "./playerStore";
+    import ContextMenu from "./ContextMenu.svelte";
     import Modal from "./Modal/Modal.svelte";
-
+    import * as pointerManager from "./Managers/PointerManager";
     $: style = `--bg: ${GlobalStyles.bg};`;
     
     let saveInterval;
@@ -20,6 +18,8 @@
     }
 
     onMount(async() => {
+        pointerManager.onAppMount();
+
         window.addEventListener('keydown', e => {
             if(e.key != "a") return;
             // soundStore.update(store => {
@@ -39,11 +39,12 @@
         }, 30000);
         
         // On Dev
-        fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
-        $onHomeScreen = false;
+        // fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        // $onHomeScreen = false;
     });
 
     onDestroy(async() => {
+        pointerManager.onAppDestroy();
         clearInterval(saveInterval);
     });
 </script>
@@ -54,8 +55,7 @@
         <HomeScreen onCollectionLoaded={onCollectionLoaded}/>
     {:else}
         <SoundListView/>
-        <SoundContextMenu/>
-        <SelectionManager/>
+        <ContextMenu/>
     {/if}
 
     <Modal/>

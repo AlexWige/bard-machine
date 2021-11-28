@@ -51,6 +51,10 @@ button {
     cursor:pointer;
 }
 
+.grabbing * {
+    cursor: copy !important;
+}
+
 button.big {
     padding: 4.5px 18px;
     font-size: 16px;

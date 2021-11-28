@@ -1,6 +1,7 @@
 <script>
     import Color from "color";
     import { onMount } from "svelte";
+    import fileLoader from "./fileLoader";
 
     export let volume;
     export let mainColor;
@@ -47,6 +48,7 @@
         window.removeEventListener('pointerup', onPointerUp);
         window.removeEventListener('touchmove', onPointerMove);
         window.removeEventListener('pointerup', onPointerUp);
+        fileLoader.saveCollection();
     }
 
     function onPointerMove(e) {
@@ -71,7 +73,7 @@
 </script>
 
 
-<div bind:this={domElement}  class="volume-slider" class:small={!isBig} style="{style}">
+<div bind:this={domElement}  class="volume-slider" class:small={!isBig} style="{style}" data-blockselection={true} data-blockdrag={true}>
     <i class="icon-font volume-icon {iconClass}"></i>
     <div class="bar" bind:this={bar} on:pointerdown={onPointerDown}>
         <div class="bar-bg"></div>

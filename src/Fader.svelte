@@ -31,15 +31,17 @@
         }
     }
 
-    export function skip() {
-        value = to;
-        onNextReachValue = null;
-        pause();
+    export function skipTo(val) {
+        start(val);
+        setValue(val);
     }
 
-    export function skipTo(_value) {
-        to = _value;
-        skip();
+    export function skip() {
+        setValue(to);
+    }
+
+    function setValue(v) {
+        value = v;
     }
 
     function tick() {

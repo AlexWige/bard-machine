@@ -23,12 +23,19 @@ function createSoundStore() {
                 return store;
             });
         },
+        renameSound: (id, newName) => {
+            update(store => {
+                const sound = store.find(s => s.id == id);
+                sound.data.title = newName;
+                return store;
+            });
+        },
         removeSound: (id) => {
             update(store => {
                 const soundWithID = store.find(s => s.id == id);
                 if(soundWithID) _.remove(store, soundWithID);
                 return store;
-            })
+            });
         },
         getItemByID: (id) => {
             let item;
@@ -44,16 +51,6 @@ function createSoundStore() {
                 if(item) item.api = api;
                 return store;
             })
-        },
-        getSelectedItems: () => {
-            let selected = [];
-            update(store => {
-                store.forEach(item => {
-                    if(item.api.isSelected()) selected.push(item);
-                });
-                return store;
-            })
-            return selected;
         },
         getPlayingSoundsInCategory: (category) => {
             let sounds = [];

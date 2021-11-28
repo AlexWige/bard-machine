@@ -39,7 +39,7 @@ import Color from "color";
     }
 </script>
 
-<div bind:this={domElement} class="play-button" class:small={!isBig} style="{style}" on:pointerdown="{onPointerDown}">
+<div bind:this={domElement} class="play-button" class:small={!isBig} style="{style}" on:pointerdown="{onPointerDown}" data-blockselection={true} data-blockdrag={true}>
     <i class="{iconClass} icon-font"></i>
 </div>
 
@@ -51,7 +51,7 @@ import Color from "color";
         height: 58px;
         width: 58px;
         border-radius: 50%;
-        top: -3px;
+        top: 5px;
         cursor: pointer;
         box-sizing: border-box;
         text-align: center;
