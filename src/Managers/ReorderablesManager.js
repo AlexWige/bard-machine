@@ -87,7 +87,7 @@ export function onDragMove(dragEvent) {
         dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
         siblingNode.appendChild(dropPreviewBar);
     }
-    const elementY = getInsideVerticalPosition;
+    const elementY = getInsideVerticalPosition(siblingNode, dragEvent.event);
     if(elementY > 0.5) {
         isTopOfHoveredElement = false;
         dropPreviewBar.style.top = 'auto';
@@ -111,42 +111,8 @@ export function onDragEnd(e) {
             else putSelectionAfter(targetNodeAPI);
         }
     }
-    dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
-    currentSiblings.forEach(node => {
-        node.removeEventListener('touchmove', onHoverNodeWhileDragging);
-        node.removeEventListener('touchend', onExitNodeWhileDragging);
-    });
     currentSiblings = [];
     if(currentAPI.onDragEnd) currentAPI.onDragEnd();
-}
-
-
-
-/***** POINTER EVENTS *****/
-
-function onHoverNodeWhileDragging(e) {
-    const node = findReorderableNodeInPath(e.path);
-    if(dropPreviewBar.parentNode != node) {
-        dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
-        node.appendChild(dropPreviewBar);
-    }
-    const elementY = getInsideVerticalPosition;
-    if(elementY > 0.5) {
-        isTopOfHoveredElement = false;
-        dropPreviewBar.style.top = 'auto';
-        dropPreviewBar.style.bottom = '-1px';
-    } else {
-        isTopOfHoveredElement = true;
-        dropPreviewBar.style.bottom = 'auto';
-        dropPreviewBar.style.top = '-1px';
-    }
-}
-
-function onExitNodeWhileDragging(e) {
-    const node = findReorderableNodeInPath(e.path);
-    if(node && dropPreviewBar.parentNode == node) {
-        node.removeChild(dropPreviewBar);
-    }
 }
 
 /****** UTILITY ******/

@@ -36,7 +36,7 @@
 
     $: style = `--bg: ${GlobalStyles.bg.darken(0.2)};`
         + `--verticalPadding: ${ $bigBlocks ? '8px' : '4px'};`
-        + `--font-size: ${ $bigBlocks ? '16px' : '13px'};`;
+        + `--font-size: ${ $bigBlocks ? '14px' : '13px'};`;
 
 </script>
 
