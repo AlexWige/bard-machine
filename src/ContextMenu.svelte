@@ -3,6 +3,7 @@
     import { onMount, onDestroy } from "svelte";
     import fileLoader from "./fileLoader";
     import * as contextMenuManager from './Managers/ContextMenuManager';
+    import { bigBlocks } from './playerStore';
 
 	export let x = 0;
 	export let y = 0;
@@ -33,7 +34,9 @@
         if(option.saveAfter) fileLoader.saveCollection();
     }
 
-    $: style = `--bg: ${GlobalStyles.bg.darken(0.2)};`;
+    $: style = `--bg: ${GlobalStyles.bg.darken(0.2)};`
+        + `--verticalPadding: ${ $bigBlocks ? '8px' : '4px'};`
+        + `--font-size: ${ $bigBlocks ? '16px' : '13px'};`;
 
 </script>
 
@@ -58,7 +61,7 @@
 		box-shadow: 1px 1px 5px 0px #0002;
 		background: var(--bg, #333);
         z-index: 1000;
-        font-size: 13px;
+        font-size: var(--font-size, 13px);
 
         ul {
             display: block;
@@ -69,7 +72,7 @@
 
             li {
                 display: block;
-                padding: 4px 10px;
+                padding: var(--verticalPadding, 4px) 10px;
                 border-bottom: 1px rgba(white, 0.2) solid;
                 cursor: pointer;
 

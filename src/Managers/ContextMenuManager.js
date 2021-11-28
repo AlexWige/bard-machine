@@ -118,7 +118,7 @@ function getOptionsFor(apis) {
 
 export function onLeftClick(e) {
     if(!e.path.find(node => node.id == 'context-menu')) {
-        contextMenuAPI.hide();
+        contextMenuAPI?.hide();
     }
 }
 

@@ -54,10 +54,6 @@ export function onDragStart(e) {
     draggedNode.appendChild(dropPreviewBar);
     currentSiblings = [...draggedNode.parentNode.children];
     currentSiblings = currentSiblings.filter(n => findAPIFromNode(n));
-    currentSiblings.forEach(node => {
-        node.addEventListener('pointermove', onHoverNodeWhileDragging);
-        node.addEventListener('pointerleave', onExitNodeWhileDragging);
-    });
     if(currentAPI.onDragStart) currentAPI.onDragStart();
     const selectable = selectionManager.findAPIFromNode(draggedNode);
     if(selectable) {
@@ -76,6 +72,33 @@ export function onDragStart(e) {
     }
 }
 
+export function onDragMove(dragEvent) {
+    if(currentSiblings?.length <= 0) return;
+
+    const hoveredNode = document.elementFromPoint(dragEvent.event.clientX, dragEvent.event.clientY);
+    const siblingNode = currentSiblings.find(sibling => sibling == hoveredNode || sibling.contains(hoveredNode));
+
+    if(!siblingNode) {
+        dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
+        return;
+    }
+    
+    if(dropPreviewBar.parentNode != siblingNode) {
+        dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
+        siblingNode.appendChild(dropPreviewBar);
+    }
+    const elementY = getInsideVerticalPosition;
+    if(elementY > 0.5) {
+        isTopOfHoveredElement = false;
+        dropPreviewBar.style.top = 'auto';
+        dropPreviewBar.style.bottom = '-1px';
+    } else {
+        isTopOfHoveredElement = true;
+        dropPreviewBar.style.bottom = 'auto';
+        dropPreviewBar.style.top = '-1px';
+    }
+}
+
 export function onDragEnd(e) {
     document.body.classList.toggle('grabbing', false);
     if(!isDragging) return;
@@ -90,11 +113,40 @@ export function onDragEnd(e) {
     }
     dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
     currentSiblings.forEach(node => {
-        node.removeEventListener('pointermove', onHoverNodeWhileDragging);
-        node.removeEventListener('pointerleave', onExitNodeWhileDragging);
+        node.removeEventListener('touchmove', onHoverNodeWhileDragging);
+        node.removeEventListener('touchend', onExitNodeWhileDragging);
     });
     currentSiblings = [];
     if(currentAPI.onDragEnd) currentAPI.onDragEnd();
+}
+
+
+
+/***** POINTER EVENTS *****/
+
+function onHoverNodeWhileDragging(e) {
+    const node = findReorderableNodeInPath(e.path);
+    if(dropPreviewBar.parentNode != node) {
+        dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
+        node.appendChild(dropPreviewBar);
+    }
+    const elementY = getInsideVerticalPosition;
+    if(elementY > 0.5) {
+        isTopOfHoveredElement = false;
+        dropPreviewBar.style.top = 'auto';
+        dropPreviewBar.style.bottom = '-1px';
+    } else {
+        isTopOfHoveredElement = true;
+        dropPreviewBar.style.bottom = 'auto';
+        dropPreviewBar.style.top = '-1px';
+    }
+}
+
+function onExitNodeWhileDragging(e) {
+    const node = findReorderableNodeInPath(e.path);
+    if(node && dropPreviewBar.parentNode == node) {
+        node.removeChild(dropPreviewBar);
+    }
 }
 
 /****** UTILITY ******/
@@ -131,9 +183,16 @@ function findReorderableNodeInPath(path) {
     return path.filter(node => findAPIFromNode(node))[0];
 }
 
+function getXAndY(e) {
+    if(e.touches && e.touches.length > 0)
+        return { x: e.touches[0].clientX, y: e.touches[0].clientY }
+    else
+        return { x: e.clientX, y: e.clientY }
+}
+
 function getInsideVerticalPosition(node, event) {
     const rect = node.getBoundingClientRect();
-    return (event.clientY - rect.top) / (rect.bottom - rect.top);
+    return (getXAndY(event).y - rect.top) / (rect.bottom - rect.top);
 }
 
 export function moveArrayItemAfter(arr, item, target) {
@@ -153,31 +212,4 @@ export function moveArrayItemBefore(arr, item, target) {
 function getNodesInDomOrder(nodes) {
     let siblings = [...nodes[0].parentNode.children];
     return siblings.filter(node => nodes.includes(node));
-}
-
-/***** POINTER EVENTS *****/
-
-function onHoverNodeWhileDragging(e) {
-    const node = findReorderableNodeInPath(e.path);
-    if(dropPreviewBar.parentNode != node) {
-        dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
-        node.appendChild(dropPreviewBar);
-    }
-    const elementY = getInsideVerticalPosition(node, e);
-    if(elementY > 0.5) {
-        isTopOfHoveredElement = false;
-        dropPreviewBar.style.top = 'auto';
-        dropPreviewBar.style.bottom = '-1px';
-    } else {
-        isTopOfHoveredElement = true;
-        dropPreviewBar.style.bottom = 'auto';
-        dropPreviewBar.style.top = '-1px';
-    }
-}
-
-function onExitNodeWhileDragging(e) {
-    const node = findReorderableNodeInPath(e.path);
-    if(node && dropPreviewBar.parentNode == node) {
-        node.removeChild(dropPreviewBar);
-    }
 }

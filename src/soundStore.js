@@ -55,11 +55,7 @@ function createSoundStore() {
         getPlayingSoundsInCategory: (category) => {
             let sounds = [];
             update(store => {
-                store.forEach(sound => {
-                    if(sound.data.category == category && sound.api.isPlaying()) {
-                        sounds.push(sound);
-                    }
-                });
+                sounds = store.filter(sound => sound.data.category == category && sound.api.isPlaying());
                 return store;
             });
             return sounds;
@@ -68,8 +64,8 @@ function createSoundStore() {
             update(store => {
                 store.forEach(sound => {
                     sound.api.setPlaying(false);
-                    return store;
                 });
+                return store;
             });
         },
         toJSON: () => {

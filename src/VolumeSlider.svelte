@@ -47,12 +47,12 @@
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('pointerup', onPointerUp);
         window.removeEventListener('touchmove', onPointerMove);
-        window.removeEventListener('pointerup', onPointerUp);
+        window.removeEventListener('touchend', onPointerUp);
         fileLoader.saveCollection();
     }
 
     function onPointerMove(e) {
-        let x = e.pointerType == 'mouse' ? e.clientX : e.touches[0].clientX;
+        let x = e.touches ? e.touches[0].clientX : e.clientX;
         let rect = bar.getBoundingClientRect();
         let ratio = (x - rect.left) / (rect.right - rect.left);
         ratio = Math.min(Math.max(ratio, 0), 1);
