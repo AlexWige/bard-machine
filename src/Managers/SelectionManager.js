@@ -1,3 +1,13 @@
+//* Handles selectable elements
+/*  ---
+    Selectable nodes must register an api with the following methods:
+        getNode: () => Returns main dom element
+        getSelectionGroup: () => Returns a string with the group name (objects in the same group can be selected together)
+        onSelect: () => Called on selected (optional)
+        onDeselect: () => Called on deselected (optional)
+    
+    Set attribute 'data-blockselection' (dataset) to true to prevent a child node from triggering selection
+*/
 import _ from 'lodash';
 
 // List of Selectable APIs
@@ -5,7 +15,7 @@ export let selectables = [];
 export let selected = [];
 let lastSelected;
 
-/******* LIST MANAGEMENT ******/
+/**************** LIST MANAGEMENT ****************/
 
 export function register(api) {
     if(!selectables.includes(api)) {
@@ -23,7 +33,57 @@ export function unregister(api) {
     }
 }
 
-/****** UTILITY ******/
+/**************** SELECT/DESELECT FUNCTIONS ****************/
+
+export function select(api) {
+    if(!selected.includes(api)) {
+        selected.push(api);
+        if(api.onSelect) api.onSelect();
+    }
+}
+
+export function deselect(api) {
+    if(selected.includes(api)) {
+        _.remove(selected, api);
+        if(api.onDeselect) api.onDeselect();
+    }
+}
+
+export function deselectAll() {
+    for (let i = selected.length - 1; i >= 0; i--) {
+        deselect(selected[i]);   
+    }
+}
+
+export function deselectAllOthers(api) {
+    for (let i = selected.length - 1; i >= 0; i--) {
+        if(selected[i] != api) deselect(selected[i]);   
+    }
+}
+
+export function deselectAllOutsideGroup(groupName) {
+    for (let i = selected.length - 1; i >= 0; i--) {
+        if(selected[i].getSelectionGroup() != groupName) deselect(selected[i]);   
+    }
+}
+
+export function selectNodes(nodes) {
+    const apis = nodes.map(n => findAPIFromNode(n)).filter(api => api);
+    apis.forEach(api => {
+        select(api);
+    });
+}
+
+export function toggleSelected(api) {
+    if(isSelected(api)) deselect(api);
+    else select(api);
+}
+
+/**************** UTILITY ****************/
+
+export function isSelected(api) {
+    return selected.includes(api);
+}
 
 export function findAPIFromNode(node) {
     return selectables.find(api => api.getNode() == node);
@@ -55,57 +115,7 @@ export function isUnselectable(path) {
     return path.find(node => node.dataset && node.dataset.blockselection);
 }
 
-/******* SELECT/DESELECT FUNCTIONS */
-
-export function deselectAll() {
-    for (let i = selected.length - 1; i >= 0; i--) {
-        deselect(selected[i]);   
-    }
-}
-
-export function deselectAllOthers(api) {
-    for (let i = selected.length - 1; i >= 0; i--) {
-        if(selected[i] != api) deselect(selected[i]);   
-    }
-}
-
-export function deselectAllOutsideGroup(groupName) {
-    for (let i = selected.length - 1; i >= 0; i--) {
-        if(selected[i].getSelectionGroup() != groupName) deselect(selected[i]);   
-    }
-}
-
-export function select(api) {
-    if(!selected.includes(api)) {
-        selected.push(api);
-        api.onSelect();
-    }
-}
-
-export function selectNodes(nodes) {
-    const apis = nodes.map(n => findAPIFromNode(n)).filter(api => api);
-    apis.forEach(api => {
-        select(api);
-    });
-}
-
-export function deselect(api) {
-    if(selected.includes(api)) {
-        _.remove(selected, api);
-        api.onDeselect();
-    }
-}
-
-export function isSelected(api) {
-    return selected.includes(api);
-}
-
-export function toggleSelected(api) {
-    if(isSelected(api)) deselect(api);
-    else select(api);
-}
-
-/******* POINTER EVENTS ******/
+/*********************** POINTER EVENTS **********************/
 
 export function onLeftClick(e) {
     const api = findAPIFromPath(e.path);

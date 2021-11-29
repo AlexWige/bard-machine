@@ -1,25 +1,38 @@
-import _, { isArguments } from "lodash";
-import { writable } from "svelte/store";
+//* Handles context menus
+/*  ---
+    Object with context menu must register an api with the following keys:
+        getNode: () => Return main dom element
+        getOptions () => [] Gets array of context menu options for this element
+            *OPTIONS are defined like so:
+            {   
+                Unique id of option
+                *id: 'remove-sound-block',
+                (Optional) Text displayed in context menu item when only one element on this kind has been right-clicked. 
+                Leave this undefined if you don't want the option to appear with only one element
+                *solo: 'Remove sound',
+                (Optional) Text displayed in context menu item with multiple selected elements on this kind
+                Leave this undefined if you don't want the option to appear with multiple elements
+                *multiple: 'Remove all selected sounds',
+                (Optional) Action done on each selected element with this context menu option when clicked
+                *onClickEach: () => { removeSound(); },
+                (Optional) Action done only once (even with multiple selected) before other events are called
+                *onClickAll: () => { beforeRemovingAll(); },
+                (Optional) Set this to true to save sound collection after all actions have been called
+                *saveAfter: true
+            }
+*/
+import _ from "lodash";
 import * as selectionManager from "./SelectionManager";
+import fileLoader from "../fileLoader";
 
 // Context menu svelte element
 let contextMenuAPI;
-
 // List of clickable elements apis
 export let clickables = [];
-
 // Last collection of clickable apis
 let lastClickablesSelection = [];
 
-// **OPTIONS** in clickable elements in api contain:
-    // id: 'remove-sound-block',
-    // solo: 'Remove Sound',
-    // multiple: 'Remove Sounds',
-    // onClickEach: () => {}
-    // onClickAll: () => {}
-
-
-/******* LIST MANAGEMENT ******/
+/************** LIST MANAGEMENT *************/
 
 export function register(api) {
     if(!clickables.includes(api)) {
@@ -37,7 +50,7 @@ export function setContextMenuAPI(api) {
     contextMenuAPI = api;
 }
 
-/****** UTILITY ******/
+/************* UTILITY *************/
 
 export function show(x, y, options) {
     return contextMenuAPI.show(x, y, options);
@@ -68,13 +81,12 @@ function findClickablesInCurrentSelection() {
     return clickableNodesInSelection.map(node => findAPIFromNode(node)).filter(api => api);
 }
 
+/*  Returns final array of options to display to menu (based on selection)
+    Each displayed option contains:
+        name: Displayed name (solo or multiple, depending on selection
+        onClick: Array of all callbacks on click (click all, each, save, etc)
+*/
 function getOptionsFor(apis) {
-    // Array of displayed options to output
-    // Elements contain:
-    //     id: 'remove-sound-block',
-    //     name: 'Remove sounds',
-    //     onClick: [() => {}, () => {}],
-    //     toRemove: false
     let displayedOptions = [];
 
     apis.forEach(api => {
@@ -108,10 +120,16 @@ function getOptionsFor(apis) {
 
     displayedOptions.forEach(option => {
         option.onClick.push(() => hide());
+        if(option.saveAfter) option.onClick.push(() => fileLoader.saveCollection());
     });
 
-    // Prune options to remove and return
-    return displayedOptions.filter(o => !o.toRemove);
+    // Prune options to remove and return without id or 'toremove'
+    return displayedOptions.filter(o => !o.toRemove).map(o => {
+        return {
+            name: o.name,
+            onClick: o.onClick
+        }
+    });
 }
 
 /****** POINTER EVENTS ******/

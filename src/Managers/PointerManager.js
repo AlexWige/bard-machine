@@ -1,3 +1,9 @@
+//* Handles pointer events (click, contextmenu, drag) and calls other managers
+/*  ---
+    Draggable nodes:
+    - Use attribute 'data-draggable' (dataset) on nodes to set them as draggable
+    - Attribute 'data-blockdrag' can be used to cancel this drag effect on child nodes
+*/
 import * as selectionManager from "./SelectionManager";
 import * as reorderableManager from "./ReorderablesManager";
 import * as contextMenuManager from "./ContextMenuManager";
@@ -8,27 +14,39 @@ let dragDelta = { x: 0, y: 0 };
 let currentDraggableNode = false;
 let isPressed = false;
 
-/***** MOUNT/DISMOUNT MANAGER *****/
+/**************** EVENTS SETUP ****************/
 
 export async function onAppMount() {
-    window.addEventListener('click', onClick);
-    window.addEventListener('contextmenu', onContextClick);
+    window.addEventListener('click', onClickEvent);
+    window.addEventListener('contextmenu', onContextClickEvent);
     window.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
 }
 
 export async function onAppDestroy() {
-    window.removeEventListener('click', onClick);
-    window.removeEventListener('contextmenu', onContextClick);
+    window.removeEventListener('click', onClickEvent);
+    window.removeEventListener('contextmenu', onContextClickEvent);
     window.removeEventListener('pointerdown', onPointerDown);
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
 }
 
-/***** DRAG *****/
+/***************** CALLBACKS ******************/
 
-function onDragStart(e) {
+// Triggered on normal click/touch
+function click(e) {
+    selectionManager.onLeftClick(e);
+}
+
+// Triggered on right click/touch hold
+function contextMenu(e) {
+    selectionManager.onRightClick(e);
+    contextMenuManager.onRightClick(e);
+}
+
+// Triggered after holding and moving draggable node
+function dragStart(e) {
     reorderableManager.onDragStart({ 
         event: e, 
         startPosition: dragStartPosition, 
@@ -37,7 +55,8 @@ function onDragStart(e) {
     });
 }
 
-function onDragMove(e) { 
+// Triggered on moving draggable node
+function dragMove(e) { 
     reorderableManager.onDragMove({ 
         event: e, 
         startPosition: dragStartPosition, 
@@ -46,7 +65,8 @@ function onDragMove(e) {
     });
 }
 
-function onDragEnd(e) {
+// Triggered on releasing draggable node
+function dragEnd(e) {
     reorderableManager.onDragEnd({ 
         event: e, 
         startPosition: dragStartPosition, 
@@ -55,21 +75,19 @@ function onDragEnd(e) {
     });
 }
 
-function doClick(e) {
-    selectionManager.onLeftClick(e);
-}
 
-/***** POINTER EVENTS *****/
+/***************** EVENT LISTENERS ******************/
 
-function onClick(e) {
+// Only used for touch (context click event will cancel this one on hold)
+function onClickEvent(e) {
     if(e.sourceCapabilities.firesTouchEvents) {
-        doClick(e);
+        click(e);
     }
 }
 
-function onContextClick(e) {
-    selectionManager.onRightClick(e);
-    contextMenuManager.onRightClick(e);
+// Right click or hold touch for a couple of seconds
+function onContextClickEvent(e) {
+    contextMenu(e);
 }
 
 function onPointerDown(e) {
@@ -90,11 +108,11 @@ function onPointerMove(e) {
 
     if(!isDragging) {
         if((Math.abs(dragDelta.x) + Math.abs(dragDelta.y)) > deadZone) {
-            onDragStart(e);
+            dragStart(e);
             isDragging = true;
         }
     } else {
-        onDragMove(e);
+        dragMove(e);
     }
 }
 
@@ -102,11 +120,12 @@ function onPointerUp(e) {
     if(e.pointerType == 'mouse' && e.button != 0) return;
     isPressed = false;
     if(isDragging) {
-        onDragEnd(e);
+        dragEnd(e);
         isDragging = false;
     } else {
+        // Only used for click with mouse
         if(e.pointerType != 'touch')  {
-            doClick(e);
+            click(e);
         }
     }
 }

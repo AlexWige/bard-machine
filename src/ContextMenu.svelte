@@ -1,7 +1,6 @@
 <script>
 	import GlobalStyles from './GlobalStyles';
-    import { onMount, onDestroy } from "svelte";
-    import fileLoader from "./fileLoader";
+    import { onMount } from "svelte";
     import * as contextMenuManager from './Managers/ContextMenuManager';
     import { bigBlocks } from './playerStore';
 
@@ -12,11 +11,13 @@
     let options = [];
 
     onMount(async() => {
-        contextMenuManager.setContextMenuAPI({
-            show: show,
-            hide: hide
-        });
+        contextMenuManager.setContextMenuAPI(api);
     });
+
+    const api = {
+        show: show,
+        hide: hide
+    };
     
     function show(_x, _y, _options) {
         visible = true;
@@ -31,7 +32,6 @@
 
     function onClickOption(option) {
         option.onClick.forEach(action => action());
-        if(option.saveAfter) fileLoader.saveCollection();
     }
 
     $: style = `--bg: ${GlobalStyles.bg.darken(0.2)};`

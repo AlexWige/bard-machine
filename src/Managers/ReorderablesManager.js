@@ -1,32 +1,44 @@
+//* Handles reorderable element
+/*  ---
+    Only nodes in the same parent can be reodered
+    - Reoderable nodes must be marked as draggable ('data-draggable' attribute to true)
+    - Reorderable elements must register an 'api' object with the following methods:
+        getNode: () => {}, // Returns main dom element
+        putBefore: node => {}, // Move this element before other node
+        putAfter: node => {} // Move this element after other node
+        onDragStart: dragEvent => {} // (optional)
+        onDragEnd: dragEvent => {} // (optional)
+*/
 import _ from 'lodash';
 import * as selectionManager from "./SelectionManager";
 
 // List of Reorderable APIs
 export const reorderables = [];
+// Curent dragged node api
 let currentAPI;
+// Curent siblings of dragged node (nodes with same parent)
 let currentSiblings;
 
 // Drag and drop
 let isDragging = false;
 let isTopOfHoveredElement = false;
 
+// Drop preview bar, showing after/before nodes while dragging over them
 const dropPreviewBar = document.createElement("div");
 dropPreviewBar.classList.add('drop-preview-bar');
 const dropPreviewStyle = document.createElement('style');
-
 dropPreviewStyle.innerHTML = `
-.drop-preview-bar {
-    display: block;
-    position: absolute;
-    left: -5px;
-    right: -5px;
-    height: 0px;
-    border-bottom: 2px #ffdf2b solid;
-}
-`;
+    .drop-preview-bar {
+        display: block;
+        position: absolute;
+        left: -5px;
+        right: -5px;
+        height: 0px;
+        border-bottom: 2px #ffdf2b solid;
+    }`;
 document.body.appendChild(dropPreviewStyle);
 
-/***** REORDERABLE LIST MANAGEMENT *****/
+/*********** REORDERABLE LIST MANAGEMENT ***********/
 
 export function register(api) {
     if(!reorderables.includes(api)) {
@@ -42,10 +54,10 @@ export function unregister(api) {
     }
 }
 
-/***** DRAG EVENTS *****/
+/**************** DRAG EVENTS **************/
 
-export function onDragStart(e) {
-    currentAPI = findAPIFromNode(e.draggableNode);
+export function onDragStart(dragEvent) {
+    currentAPI = findAPIFromNode(dragEvent.draggableNode);
     if(!currentAPI) return;
 
     isDragging = true;
@@ -54,7 +66,9 @@ export function onDragStart(e) {
     draggedNode.appendChild(dropPreviewBar);
     currentSiblings = [...draggedNode.parentNode.children];
     currentSiblings = currentSiblings.filter(n => findAPIFromNode(n));
-    if(currentAPI.onDragStart) currentAPI.onDragStart();
+    if(currentAPI.onDragStart) currentAPI.onDragStart(dragEvent);
+
+    // If node is selectable
     const selectable = selectionManager.findAPIFromNode(draggedNode);
     if(selectable) {
         // Select if unselected
@@ -99,7 +113,7 @@ export function onDragMove(dragEvent) {
     }
 }
 
-export function onDragEnd(e) {
+export function onDragEnd(dragEvent) {
     document.body.classList.toggle('grabbing', false);
     if(!isDragging) return;
     isDragging = false;
@@ -112,11 +126,11 @@ export function onDragEnd(e) {
         }
     }
     currentSiblings = [];
-    if(currentAPI.onDragEnd) currentAPI.onDragEnd();
+    if(currentAPI.onDragEnd) currentAPI.onDragEnd(dragEvent);
     dropPreviewBar.parentNode?.removeChild(dropPreviewBar);
 }
 
-/****** UTILITY ******/
+/********************* UTILITY *********************/
 
 function putSelectionAfter(targetAPI) {
     let selectedNodes = selectionManager.selected.map(api => api.getNode());
@@ -146,10 +160,7 @@ function findAPIFromNode(node) {
     return reorderables.find(api => api.getNode() == node);
 }
 
-function findReorderableNodeInPath(path) {
-    return path.filter(node => findAPIFromNode(node))[0];
-}
-
+// Get global pointer position x and y from event
 function getXAndY(e) {
     if(e.touches && e.touches.length > 0)
         return { x: e.touches[0].clientX, y: e.touches[0].clientY }
