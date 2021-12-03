@@ -1,15 +1,16 @@
 <script>
+    import globalStyles from "./style/globalStyles";
+    import collectionLoader from "./collectionLoader";
+    import * as pointerManager from "./managers/pointerManager";
+    import { onHomeScreen } from "./playerStore";
+    import { onDestroy, onMount } from "svelte";
     import TopBar from "./TopBar.svelte";
-    import GlobalStyles from "./GlobalStyles";
     import SoundListView from "./SoundListView.svelte";
     import HomeScreen from "./HomeScreen.svelte";
-    import fileLoader from "./fileLoader";
-    import { onDestroy, onMount } from "svelte";
-    import { onHomeScreen } from "./playerStore";
     import ContextMenu from "./ContextMenu.svelte";
-    import Modal from "./Modal/Modal.svelte";
-    import * as pointerManager from "./Managers/PointerManager";
-    $: style = `--bg: ${GlobalStyles.bg};`;
+    import Modal from "./modal/Modal.svelte";
+
+    $: style = `--bg: ${globalStyles.bg};`;
     
     let saveInterval;
 
@@ -20,26 +21,19 @@
     onMount(async() => {
         pointerManager.onAppMount();
 
-        window.addEventListener('keydown', e => {
-            if(e.key != "a") return;
-            // soundStore.update(store => {
-            //     console.log(store);
-            //     return store;
-            // })
-            // apis.modal.show("Hey les potes !", [{ name: "yes", onClick: () => {
-            //     $onHomeScreen = true;
-            //     apis.modal.hide();
-            // }}]);
-        });
-
         // Autosave collection every 30s
         saveInterval = setInterval(() => {
-            if(fileLoader.collectionPath != '' && !onHomeScreen)
-                fileLoader.saveCollection();
+            if(collectionLoader.collectionPath != '' && !onHomeScreen)
+                collectionLoader.saveCollection();
         }, 30000);
-        
-        // On Dev
-        // fileLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+
+        // **** TEST BUTTON
+        // window.addEventListener('keydown', e => {
+        //     if(e.key != "t") return;
+        // });
+
+        // **** ON DEV
+        // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
         // $onHomeScreen = false;
     });
 
@@ -57,12 +51,11 @@
         <SoundListView/>
         <ContextMenu/>
     {/if}
-
     <Modal/>
 </main>
 
 <style lang="scss">
-    @import './fonts.scss';
+    @import './style/fonts.scss';
 
     main {
         background-color: var(--bg, #333);

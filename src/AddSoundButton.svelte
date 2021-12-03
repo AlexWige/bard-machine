@@ -1,7 +1,7 @@
 <script>
     const { ipcRenderer } = window.require('electron');
-    import fileLoader from "./fileLoader";
-    import GlobalStyles from './GlobalStyles';
+    import collectionLoader from "./collectionLoader";
+    import globalStyles from './style/globalStyles';
 
     export let category = 'music';
 
@@ -12,12 +12,12 @@
 
     function onSoundPathResponse(e, paths) {
         ipcRenderer.removeListener('import-new-sounds', onSoundPathResponse);
-        fileLoader.addSounds(paths, category);
-        fileLoader.saveCollection();
+        collectionLoader.addSounds(paths, category);
+        collectionLoader.saveCollection();
     }
 
-    $: style = `--bg: ${GlobalStyles.bg.darken(0.1)};`
-            + `--bgHover: ${GlobalStyles.bg.lighten(0.5)};`;
+    $: style = `--bg: ${globalStyles.bg.darken(0.1)};`
+            + `--bgHover: ${globalStyles.bg.lighten(0.5)};`;
 </script>
 
 <div class="add-button" on:click={askForSoundPaths} style={style}>Add sounds…</div>

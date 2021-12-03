@@ -1,17 +1,18 @@
 <script>
     import PlayButton from './PlayButton.svelte';
     import VolumeSlider from './VolumeSlider.svelte';
-    import GlobalStyles from './GlobalStyles';
+    import globalStyles from '../style/globalStyles';
     import Color from 'color';
     import soundStore from './soundStore';
-    import { globalVolume, bigBlocks, apis } from './playerStore';
+    import { globalVolume, bigBlocks, apis } from '../playerStore';
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
-    import * as reorderableManager from "./Managers/ReorderablesManager";
-    import * as selectionManager from "./Managers/SelectionManager";
-    import * as contextMenuManager from "./Managers/ContextMenuManager";
-    import fileLoader from "./fileLoader";
+    import * as reorderableManager from "../managers/reorderablesManager";
+    import * as selectionManager from "../managers/selectionManager";
+    import * as contextMenuManager from "../managers/contextMenuManager";
+    import collectionLoader from "../collectionLoader";
+    import { getInputModal } from "../hotkeys/hotkey-manager";
     
     export let id;
     export let soundData;
@@ -30,9 +31,8 @@
     let faderValue = 0;
     let sound = new Audio(soundData.path);
 
-    let keyCode = 0;
-    let keyName = "";
-    $: keyFontSize = getAssignKeySize(keyName.length, $bigBlocks); 
+    $: hotkeyName = soundData.hotkeyName ?? '';
+    $: keyFontSize = getAssignKeySize(hotkeyName ? hotkeyName.length : 0, $bigBlocks); 
 
     const api = {
         getID: () => id,
@@ -40,6 +40,15 @@
         setPlaying: (play) => { isPlaying = play; },
         stop: () => stopSound,
         getDOM: () => dom,
+        onHotkey: () => { 
+            if(soundData.category == 'effects') {
+                isPlaying = true;
+                sound.currentTime = 0;
+                fader.skipToOne();
+            } else {
+                isPlaying = !isPlaying;
+            }
+        }
     }
 
     const selectableAPI = {
@@ -57,7 +66,7 @@
                 const targetSound = soundStore.getItemByID(node.dataset.id);
                 return reorderableManager.moveArrayItemAfter(store, soundStore.getItemByID(id), targetSound);
             });
-            fileLoader.saveCollection();
+            collectionLoader.saveCollection();
         },
         putBefore: node => {
             if(!node.dataset || !node.dataset.id) return;
@@ -65,7 +74,7 @@
                 const targetSound = soundStore.getItemByID(node.dataset.id);
                 return reorderableManager.moveArrayItemBefore(store, soundStore.getItemByID(id), targetSound);
             });
-            fileLoader.saveCollection();
+            collectionLoader.saveCollection();
         }
     }
 
@@ -90,10 +99,10 @@
                                 let newName = apis.modal.getInputValue();
                                 soundStore.renameSound(id, newName);
                                 apis.modal.hide();
-                                fileLoader.saveCollection();
+                                collectionLoader.saveCollection();
                             }}
                         ],
-                        { value: soundData.title, placeHolder: 'Enter sound name...' }
+                        { value: soundData.category, placeHolder: 'Enter sound name...' }
                     );
                 }
             },
@@ -107,21 +116,6 @@
                 saveAfter: true
             }
         ]
-    }
-
-    const hotKeyAPI = {
-        getKeyCode: () => { return keyCode },
-        setKey: (code, name) => { keyCode = code; keyName = name; },
-        clearKeyCode: () => { keyCode = undefined; keyName = '';},
-        triggerSound: () => { 
-            if(soundData.category == 'effects') {
-                isPlaying = true;
-                sound.currentTime = 0;
-                fader.skipToOne();
-            } else {
-                isPlaying = !isPlaying;
-            }
-        }
     }
     
     onMount(async () => {
@@ -146,16 +140,14 @@
     });
     
     $: mainColor = getMainColor(soundData.category);
-
-    $: displayedKey = keyName;
     
     $: style = `--mainColor: ${mainColor.hex()};`
     + `--mainColorLighter: ${mainColor.lighten(0.1)};`
-    + `--mainBoxBG: ${isPlaying ? mainColor.hex() : GlobalStyles.bg.lighten(0.5).hex()};`
-    + `--mainBoxBGHover: ${isPlaying ? mainColor.hex() : GlobalStyles.bg.lighten(0.65).hex()};`
-    + `--mainBoxBGSelected: ${isPlaying ? mainColor.lighten(0.05).hex() : GlobalStyles.bg.lighten(1.2).hex()};`
-    + `--mainBoxBGSelectedHover: ${isPlaying ? mainColor.lighten(0.07).hex() : GlobalStyles.bg.lighten(1.4).hex()};`
-    + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : GlobalStyles.bg.lighten(1).hex()};`
+    + `--mainBoxBG: ${isPlaying ? mainColor.hex() : globalStyles.bg.lighten(0.5).hex()};`
+    + `--mainBoxBGHover: ${isPlaying ? mainColor.hex() : globalStyles.bg.lighten(0.65).hex()};`
+    + `--mainBoxBGSelected: ${isPlaying ? mainColor.lighten(0.05).hex() : globalStyles.bg.lighten(1.2).hex()};`
+    + `--mainBoxBGSelectedHover: ${isPlaying ? mainColor.lighten(0.07).hex() : globalStyles.bg.lighten(1.4).hex()};`
+    + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : globalStyles.bg.lighten(1).hex()};`
     + `--fontWeight: ${isPlaying ? '600' : '400'};`;
 
     $: onVolumeChange(soundData.volume, $globalVolume, faderValue);
@@ -164,9 +156,9 @@
 
     function getMainColor(blockType) {
         switch (blockType) {
-            case 'music': return GlobalStyles.music;
-            case 'ambient': return GlobalStyles.ambient;
-            case 'effects': return GlobalStyles.effects;
+            case 'music': return globalStyles.music;
+            case 'ambient': return globalStyles.ambient;
+            case 'effects': return globalStyles.effects;
             default: return Color('#333');
         }
     }
@@ -230,7 +222,7 @@
     }
 
     function onAssignButtonPressed(e) {
-        apis.inputPrompt?.show(hotKeyAPI);
+        getInputModal()?.show(id);
     }
 </script>
 
@@ -255,7 +247,7 @@
             </div>
         </div>       
         <div bind:this={dom.assignButton} data-blockselection={true} class="assign-btn" on:click={onAssignButtonPressed} style="font-size: {keyFontSize}">
-            {displayedKey}
+            {hotkeyName}
         </div>         
     </div>
     <PlayButton 

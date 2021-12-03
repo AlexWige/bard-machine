@@ -6,6 +6,8 @@ export class SoundData {
         this.category = category;
         this.volume = category == 'music' ? 0.6 : 0.8;
         this.title = this.processTitle(path);
+        this.hotkeyCode = -1;
+        this.hotkeyName = '';
     }
 
     processTitle(path) {

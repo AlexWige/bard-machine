@@ -1,17 +1,17 @@
 <script>
-    import GlobalStyles from "./GlobalStyles";
+    import globalStyles from "./style/globalStyles";
     import { onDestroy, onMount } from "svelte";
-    import fileLoader from "./fileLoader";
+    import collectionLoader from "./collectionLoader";
     const { ipcRenderer } = window.require('electron');
     import { fly } from "svelte/transition";
     
     export let onCollectionLoaded;
 
-    $: style = `--bg: ${GlobalStyles.bg};`
-        + `--topBarHeight: ${GlobalStyles.topBarSize};`
-        + `--uiHighlightColor: ${GlobalStyles.uiHighlightColor};`
-        + `--buttonColor: ${GlobalStyles.uiHighlightColor.saturate(0.3).darken(0.1)};`
-        + `--buttonColorHover: ${GlobalStyles.uiHighlightColor.saturate(1.5).darken(0.25)};`;
+    $: style = `--bg: ${globalStyles.bg};`
+        + `--topBarHeight: ${globalStyles.topBarSize};`
+        + `--uiHighlightColor: ${globalStyles.uiHighlightColor};`
+        + `--buttonColor: ${globalStyles.uiHighlightColor.saturate(0.3).darken(0.1)};`
+        + `--buttonColorHover: ${globalStyles.uiHighlightColor.saturate(1.5).darken(0.25)};`;
 
     onMount(async () => {
         ipcRenderer.addListener('collection-open-path-selected', openCollection);
@@ -24,12 +24,12 @@
     });
 
     function createCollection(e, path) {
-        fileLoader.createCollection(path);
+        collectionLoader.createCollection(path);
         onCollectionLoaded();
     }
 
     function openCollection(e, path) {
-        fileLoader.openCollection(path);
+        collectionLoader.openCollection(path);
         onCollectionLoaded();
     }
 </script>

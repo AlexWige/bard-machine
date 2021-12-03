@@ -1,12 +1,12 @@
 <script>
-	import Switch from './Switch.svelte';
-    import VolumeSlider from './VolumeSlider.svelte';
     import Color from 'color';
-    import GlobalStyles from './GlobalStyles';
+    import globalStyles from './style/globalStyles';
     import { globalVolume, bigBlocks } from './playerStore';
-    import soundStore from './soundStore';
+    import soundStore from './sound-blocks/soundStore';
+	import Switch from './utils/Switch.svelte';
+    import VolumeSlider from './sound-blocks/VolumeSlider.svelte';
     
-    $: style = `--barColor: ${GlobalStyles.bg.lighten(0.9).hex()};`;
+    $: style = `--barColor: ${globalStyles.bg.lighten(0.9).hex()};`;
 </script>
 
 <div id="bottom-bar" style={style}>

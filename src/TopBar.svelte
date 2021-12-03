@@ -1,13 +1,12 @@
 <script>
     import { onMount } from "svelte";
     import { onHomeScreen } from "./playerStore";
-    import fileLoader from "./fileLoader";
-    import GlobalStyles from "./GlobalStyles";
-    import soundStore from "./soundStore";
+    import collectionLoader from "./collectionLoader";
+    import globalStyles from "./style/globalStyles";
     const { ipcRenderer } = window.require('electron');
     let maximizedWindow = false;
 
-    $: style = `--barHeight: ${GlobalStyles.topBarSize};`;
+    $: style = `--barHeight: ${globalStyles.topBarSize};`;
     let hoveringHomeButton = false;
 
     onMount(async () => {
@@ -21,14 +20,14 @@
     });
 
     function onClickTitle() {
-        fileLoader.saveCollection();
-        fileLoader.closeCollection();
+        collectionLoader.saveCollection();
+        collectionLoader.closeCollection();
         onHomeScreen.set(true)
     }
 
     function onCloseButton(e) {
         ipcRenderer.send('close-window');
-        fileLoader.saveCollection();
+        collectionLoader.saveCollection();
     }
 </script>
 

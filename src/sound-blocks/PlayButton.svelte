@@ -1,7 +1,6 @@
 <script>
-import Color from "color";
-
-    import GlobalStyles from "./GlobalStyles";
+    import Color from "color";
+    import globalStyles from "../style/globalStyles";
 
     export let isPlaying;
     export let mainColor;
@@ -25,8 +24,8 @@ import Color from "color";
     };
 
     function getIconColor() {
-        if(!isPlaying) return mainColor.mix(GlobalStyles.bg, 0.62).hex();
-        else return Color('white').mix(GlobalStyles.bg, 0.7).hex();
+        if(!isPlaying) return mainColor.mix(globalStyles.bg, 0.62).hex();
+        else return Color('white').mix(globalStyles.bg, 0.7).hex();
     }
 
     function onPointerDown(e) {
@@ -44,7 +43,7 @@ import Color from "color";
 </div>
 
 <style lang="scss">
-    @import './fonts.scss';
+    @import '../style/fonts.scss';
 
     .play-button {
         position: absolute;

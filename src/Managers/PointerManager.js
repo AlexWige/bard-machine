@@ -4,9 +4,9 @@
     - Use attribute 'data-draggable' (dataset) on nodes to set them as draggable
     - Attribute 'data-blockdrag' can be used to cancel this drag effect on child nodes
 */
-import * as selectionManager from "./SelectionManager";
-import * as reorderableManager from "./ReorderablesManager";
-import * as contextMenuManager from "./ContextMenuManager";
+import * as selectionManager from "./selectionManager";
+import * as reorderableManager from "./reorderablesManager";
+import * as contextMenuManager from "./contextMenuManager";
 
 let isDragging = false;
 let dragStartPosition = { x: 0, y: 0};
@@ -45,7 +45,7 @@ function contextMenu(e) {
     contextMenuManager.onRightClick(e);
 }
 
-// Triggered after holding and moving draggable node
+// Triggered after holding and moving draggable node out of 'deadzone'
 function dragStart(e) {
     reorderableManager.onDragStart({ 
         event: e, 

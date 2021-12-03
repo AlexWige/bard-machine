@@ -1,13 +1,13 @@
 <script>
-    import GlobalStyles from "../GlobalStyles";
+    import globalStyles from "../style/globalStyles";
     import ModalOption from "./ModalOption.svelte";
     import ModalInput from "./ModalInput.svelte";
     import { tick, onMount, onDestroy } from "svelte";
     import { apis } from "../playerStore";
 
-    $: style = `--bgCache: ${GlobalStyles.bg.darken(0.5).fade(0.4)};`
-            + `--boxBg: ${GlobalStyles.bg.lighten(0.6)};`
-            + `--topBarHeight: ${GlobalStyles.topBarSize};`
+    $: style = `--bgCache: ${globalStyles.bg.darken(0.5).fade(0.4)};`
+            + `--boxBg: ${globalStyles.bg.lighten(0.6)};`
+            + `--topBarHeight: ${globalStyles.topBarSize};`
             + `--display: ${visible ? 'block' : 'none'};`;
 
     export let visible = false;
@@ -18,8 +18,8 @@
         //     name: "Close",
         //     onClick: () => hide(),
         //     backgroundColor: '#d03d3d',
-        //     isDefault: false
-        // }
+        //     hotKey: 'Enter'
+        // },
     ];
     export let inputValue = '';
     export let inputPlaceholder = 'Enter your text here...';

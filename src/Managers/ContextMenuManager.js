@@ -22,8 +22,8 @@
             }
 */
 import _ from "lodash";
-import * as selectionManager from "./SelectionManager";
-import fileLoader from "../fileLoader";
+import * as selectionManager from "./selectionManager";
+import collectionLoader from "../collectionLoader";
 
 // Context menu svelte element
 let contextMenuAPI;
@@ -120,7 +120,7 @@ function getOptionsFor(apis) {
 
     displayedOptions.forEach(option => {
         option.onClick.push(() => hide());
-        if(option.saveAfter) option.onClick.push(() => fileLoader.saveCollection());
+        if(option.saveAfter) option.onClick.push(() => collectionLoader.saveCollection());
     });
 
     // Prune options to remove and return without id or 'toremove'

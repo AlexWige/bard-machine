@@ -7,6 +7,5 @@ export const onHomeScreen = writable(true);
 
 // Global reference to elements apis
 export const apis = {
-    inputPrompt: undefined,
     modal: undefined
 }

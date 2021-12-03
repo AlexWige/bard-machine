@@ -1,7 +1,7 @@
 <script>
     import Color from "color";
     import { onMount } from "svelte";
-    import fileLoader from "./fileLoader";
+    import collectionLoader from "../collectionLoader";
 
     export let volume;
     export let mainColor;
@@ -48,7 +48,7 @@
         window.removeEventListener('pointerup', onPointerUp);
         window.removeEventListener('touchmove', onPointerMove);
         window.removeEventListener('touchend', onPointerUp);
-        fileLoader.saveCollection();
+        collectionLoader.saveCollection();
     }
 
     function onPointerMove(e) {
@@ -82,7 +82,7 @@
 </div>
 
 <style lang="scss">
-    @import './fonts.scss';
+    @import '../style/fonts.scss';
 
     $safe-margin: 8px;
 

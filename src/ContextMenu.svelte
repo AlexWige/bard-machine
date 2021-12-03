@@ -1,7 +1,7 @@
 <script>
-	import GlobalStyles from './GlobalStyles';
+	import globalStyles from './style/globalStyles';
     import { onMount } from "svelte";
-    import * as contextMenuManager from './Managers/ContextMenuManager';
+    import * as contextMenuManager from './managers/contextMenuManager';
     import { bigBlocks } from './playerStore';
 
 	export let x = 0;
@@ -34,7 +34,7 @@
         option.onClick.forEach(action => action());
     }
 
-    $: style = `--bg: ${GlobalStyles.bg.darken(0.2)};`
+    $: style = `--bg: ${globalStyles.bg.darken(0.2)};`
         + `--verticalPadding: ${ $bigBlocks ? '8px' : '4px'};`
         + `--font-size: ${ $bigBlocks ? '14px' : '13px'};`;
 

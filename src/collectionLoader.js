@@ -1,7 +1,6 @@
 const fs = require('fs');
-import { SoundData } from './soundData';
-import soundStore from './soundStore';
-import gettableStore from './gettableStore';
+import soundStore from './sound-blocks/soundStore';
+import gettableStore from './utils/gettableStore';
 
 const collectionPath = gettableStore('');
 
@@ -26,9 +25,7 @@ function saveCollection() {
     const jsonData = soundStore.toJSON();
     const path = collectionPath.get();
     if(!path || path == '') return;
-    fs.writeFile(path, jsonData, "utf8", () => { 
-        // console.log("Collection saved!");
-    });
+    fs.writeFile(path, jsonData, "utf8", () => {});
 }
 
 function refreshCollection() {

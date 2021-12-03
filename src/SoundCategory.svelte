@@ -1,6 +1,6 @@
 <script>
-    import SoundBlock from './SoundBlock.svelte';
-    import soundStore from './soundStore';
+    import SoundBlock from './sound-blocks/SoundBlock.svelte';
+    import soundStore from './sound-blocks/soundStore';
     import _ from 'lodash';
     import AddSoundButton from './AddSoundButton.svelte';
 

@@ -1,14 +1,14 @@
 <script>
+    import globalStyles from "./style/globalStyles";
     import BottomBar from "./BottomBar.svelte";
-    import GlobalStyles from "./GlobalStyles";
-    import InputPrompt from "./InputPrompt.svelte";
+    import InputModal from "./hotkeys/InputModal.svelte";
     import SoundCategory from "./SoundCategory.svelte";
 
-    $: style = `--bg: ${GlobalStyles.bg};`
-            + `--topBarHeight: ${GlobalStyles.topBarSize};`
-            + `--musicColor: ${GlobalStyles.music};`
-            + `--ambientColor: ${GlobalStyles.ambient};`
-            + `--effectsColor: ${GlobalStyles.effects};`;
+    $: style = `--bg: ${globalStyles.bg};`
+            + `--topBarHeight: ${globalStyles.topBarSize};`
+            + `--musicColor: ${globalStyles.music};`
+            + `--ambientColor: ${globalStyles.ambient};`
+            + `--effectsColor: ${globalStyles.effects};`;
 </script>
 
 <div id="sound-list-view" style="{style}">
@@ -23,13 +23,13 @@
             </div>
         </div>
     </div>
-    <InputPrompt/>
+    <InputModal/>
     <BottomBar/>
 </div>
 
 
 <style lang="scss">
-    @import './fonts.scss';
+    @import './style/fonts.scss';
 
     #sound-list-view {
         position: fixed;

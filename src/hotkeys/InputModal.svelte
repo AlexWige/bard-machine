@@ -1,20 +1,22 @@
 <script>
-    import GlobalStyles from "./GlobalStyles";
-    import { hotKeys, isPromptActive } from "./hotkeyStore";
+    import globalStyles from "../style/globalStyles";
     import { onDestroy, onMount } from "svelte";
-    import { apis } from "./playerStore";
+    import { apis } from "../playerStore";
+    import { inputModalActive } from "./hotkey-manager";
+    import * as hotkeyManager from "./hotkey-manager";
 
-    $: isActive = $isPromptActive;
-    let currentKeyAPI;
+    let currentSoundID;
+    
+    $: isActive = $inputModalActive;
 
-    $: style = `--bgCache: ${GlobalStyles.bg.darken(0.5).fade(0.1).rgb()};`
-        + `--boxBg: ${GlobalStyles.bg.lighten(0.6).rgb()};`
+    $: style = `--bgCache: ${globalStyles.bg.darken(0.5).fade(0.1).rgb()};`
+        + `--boxBg: ${globalStyles.bg.lighten(0.6).rgb()};`
         + `--displayed: ${isActive ? 'block' : 'none'};`
-        + `--topBarHeight: ${GlobalStyles.topBarSize};`;
+        + `--topBarHeight: ${globalStyles.topBarSize};`;
 
     onMount(async () => {
         window.addEventListener('keydown', onKeyDown);
-        apis.inputPrompt = api;
+        hotkeyManager.registerInputModal(api);
     });
 
     onDestroy(async () => {
@@ -26,8 +28,8 @@
         hide: hide
     }
     
-    export function show(keyAPI) {
-        currentKeyAPI = keyAPI;
+    export function show(soundID) {
+        currentSoundID = soundID;
         isActive = true;
     }
 
@@ -60,36 +62,35 @@
         let keyName = processKeyName(e.keyCode, e.key);
 
         if(isActive) {
+            e.preventDefault();
             if(e.keyCode == 27) {
                 hide();
                 return;
             }
             if(e.keyCode == 17 || e.keyCode == 16 || e.keyCode == 144) return;
-            hotKeys.addHotKey(e.keyCode, keyName, currentKeyAPI);
+            hotkeyManager.setSoundHotkey(currentSoundID, e.keyCode, keyName);
             hide();
         } else if(!apis.modal.isVisible()) {
-            const api = hotKeys.findAPI(e.keyCode);
-            if(api) api.triggerSound();
+            const sound = hotkeyManager.getSoundWithHotkey(e.keyCode);
+            if(sound && sound.api) sound.api.onHotkey();
         }
     }
     
     function unassignKey() {
-        if(currentKeyAPI) {
-            hotKeys.removeHotKey(currentKeyAPI.getKeyCode());
-        }
+        hotkeyManager.setSoundHotkey(currentSoundID, -1, '');
         hide();
     }
 </script>
 
-<div id="input-prompt" class="prompt" style={style} on:click={hide}>
+<div id="input-modal" class="prompt" style={style} on:click={hide}>
     <div class="prompt-box">
-        <div id="input-prompt-touch-zone">
+        <div id="input-modal-touch-zone">
             <h2>Press any key to assign...</h2>
             <div class="key"></div>
         </div>
         <div class="prompt-options">
-            <a id="input-prompt-delete" on:click={unassignKey}>Unassign</a>
-            <a id="input-prompt-cancel" on:click={hide}>Go back</a>
+            <a id="input-modal-delete" on:click={unassignKey}>Unassign</a>
+            <a id="input-modal-cancel" on:click={hide}>Go back</a>
         </div>
     </div>
 </div>
@@ -120,7 +121,7 @@
             box-shadow: 0 0 20px 1px rgba(0, 0, 0, 0.25);
         }
 
-        #input-prompt-touch-zone {
+        #input-modal-touch-zone {
             position: absolute;
             top: 0;
             left: 0;
@@ -160,7 +161,7 @@
                 width: 50px;
                 height: 50px;
                 background-color: transparentize(black, 0.85);
-                border-radius: 12px;
+                border-radius: 10px;
                 z-index: 500;
             }
         }
