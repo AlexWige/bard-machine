@@ -1,6 +1,7 @@
 import { writable } from "svelte/store";
 import { SoundStoreItem, getNewID } from "./soundStoreItem";
 import { SoundData } from "./soundData";
+import _ from "lodash";
 
 function createSoundStore() {
 	const { subscribe, set, update } = writable([]);
