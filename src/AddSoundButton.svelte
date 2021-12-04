@@ -2,8 +2,16 @@
     const { ipcRenderer } = window.require('electron');
     import collectionLoader from "./collectionLoader";
     import globalStyles from './style/globalStyles';
+    import tippy from "tippy.js";
+    import { onMount } from "svelte";
 
     export let category = 'music';
+
+    let rootNode;
+
+    onMount(async() => {
+        tippy(rootNode, { content : 'Open file browser...' });
+    });
 
     function askForSoundPaths() {
         ipcRenderer.addListener('import-new-sounds', onSoundPathResponse);
@@ -20,7 +28,7 @@
             + `--bgHover: ${globalStyles.bg.lighten(0.5)};`;
 </script>
 
-<div class="add-button" on:click={askForSoundPaths} style={style}>Add sounds…</div>
+<div bind:this={rootNode} class="add-button" on:click={askForSoundPaths} style={style}>Add sounds…</div>
 
 <style lang="scss">
     .add-button {

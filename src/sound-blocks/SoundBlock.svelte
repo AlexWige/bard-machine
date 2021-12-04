@@ -13,6 +13,7 @@
     import * as contextMenuManager from "../managers/contextMenuManager";
     import collectionLoader from "../collectionLoader";
     import { getInputModal } from "../hotkeys/hotkey-manager";
+    import tippy from 'tippy.js';
     
     export let id;
     export let soundData;
@@ -128,6 +129,9 @@
             if(soundData.category != 'effects') sound.play();
             else isPlaying = false;
         };
+        
+        tippy(dom.assignButton, { content:  'Assign hotkey' });
+        tippy(dom.volumeSlider, { content: 'Sound volume' });
     });
     
     onDestroy(async() => {

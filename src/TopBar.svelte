@@ -3,11 +3,13 @@
     import { onHomeScreen } from "./playerStore";
     import collectionLoader from "./collectionLoader";
     import globalStyles from "./style/globalStyles";
+    import tippy from "tippy.js";
+
     const { ipcRenderer } = window.require('electron');
     let maximizedWindow = false;
+    let hoveringHomeButton = false;
 
     $: style = `--barHeight: ${globalStyles.topBarSize};`;
-    let hoveringHomeButton = false;
 
     onMount(async () => {
         ipcRenderer.on('window-unmaximized', () => {
@@ -17,6 +19,8 @@
         ipcRenderer.on('window-maximized', () => {
             maximizedWindow = true;
         });
+
+        tippy('#home-button', { content: 'Go to home menu...', delay: [1000, 0] });
     });
 
     function onClickTitle() {

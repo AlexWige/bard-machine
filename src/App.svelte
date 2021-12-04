@@ -9,6 +9,8 @@
     import HomeScreen from "./HomeScreen.svelte";
     import ContextMenu from "./ContextMenu.svelte";
     import Modal from "./modal/Modal.svelte";
+    import 'tippy.js/dist/tippy.css';
+    import tippy from "tippy.js";
 
     $: style = `--bg: ${globalStyles.bg};`;
     
@@ -27,14 +29,16 @@
                 collectionLoader.saveCollection();
         }, 30000);
 
+        tippy.setDefaultProps({ delay: [1000, 0] });
+
         // **** TEST BUTTON
         // window.addEventListener('keydown', e => {
         //     if(e.key != "t") return;
         // });
 
         // **** ON DEV
-        // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
-        // $onHomeScreen = false;
+        collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        $onHomeScreen = false;
     });
 
     onDestroy(async() => {

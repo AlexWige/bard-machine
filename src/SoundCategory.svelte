@@ -3,8 +3,13 @@
     import soundStore from './sound-blocks/soundStore';
     import _ from 'lodash';
     import AddSoundButton from './AddSoundButton.svelte';
+    import { onMount } from "svelte";
 
     export let category;
+
+    onMount(async() => { 
+        tippy()
+    });
 </script>
 
 <div class="category {category}">

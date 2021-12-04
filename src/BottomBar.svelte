@@ -5,18 +5,32 @@
     import soundStore from './sound-blocks/soundStore';
 	import Switch from './utils/Switch.svelte';
     import VolumeSlider from './sound-blocks/VolumeSlider.svelte';
+    import tippy from "tippy.js";
+    import { onMount } from "svelte";
     
     $: style = `--barColor: ${globalStyles.bg.lighten(0.9).hex()};`;
+
+    const dom = {
+        stopButton: undefined,
+        volumeSlider: undefined,
+        bigBlocksSwitch: undefined
+    }
+
+    onMount(async() => {
+        tippy(dom.stopButton, { content: 'Stop all sounds' });
+        tippy(dom.volumeSlider, { content: 'Global volume' });
+        tippy(dom.bigBlocksSwitch, { content: 'Toggle big blocks' });
+    });
 </script>
 
 <div id="bottom-bar" style={style}>
     <div class="center-controls">
-        <i class="stop" on:pointerdown="{soundStore.stopAll}"></i>
+        <i class="stop" bind:this={dom.stopButton} on:pointerdown="{soundStore.stopAll}"></i>
         <div class="volume">
-            <VolumeSlider mainColor={Color("#999")} bind:volume={$globalVolume} isPlaying={true}/>
+            <VolumeSlider mainColor={Color("#999")} bind:domElement={dom.volumeSlider} bind:volume={$globalVolume} isPlaying={true}/>
         </div>
         <div class="switch">
-            <Switch bind:checked={$bigBlocks}></Switch>
+            <Switch bind:domElement={dom.bigBlocksSwitch} bind:checked={$bigBlocks}></Switch>
             <img class:active={$bigBlocks} src="icons/enlarge-icon.svg" alt="Use Small Icons">
         </div>
     </div>
@@ -39,13 +53,21 @@
 
     #bottom-bar .center-controls {
         position: relative;
+        overflow: hidden;
+        box-sizing: border-box;
         margin: 9px auto;
         width: 90%;
         height: 40px;
         max-width: 500px;
 
         i.stop {
+            position: relative;
+            display: block;
             line-height: 31px;
+            width: 30px;
+            height: 30px;
+            margin-top: 4px;
+
             &:hover::after {
                 transform: scale(1.1);
                 opacity: 1;
@@ -53,18 +75,15 @@
         }
 
         i.stop::after {
-            font-family: 'icomoon';
-            content: '\ea1e';
-            font-size: 32px;
-            padding-top: 4px;
-            padding-left: 8px;
-            box-sizing: border-box;
-            font-style: normal;
             position: absolute;
             left: 0;
-            width: 48px;
             top: 0;
             bottom: 0;
+            font-family: 'icomoon';
+            content: '\ea1e';
+            font-size: 30px;
+            box-sizing: border-box;
+            font-style: normal;
             cursor: pointer;
             opacity: 0.8;
         }
@@ -81,12 +100,12 @@
         .switch {
             display: block;
             position: absolute;
-            top: 9px;
+            top: 11px;
             right: 38px;
             height: 8px;
 
             img {
-                width: 19px;
+                width: 18px;
                 display: block;
                 position: absolute;
                 right: -29px;

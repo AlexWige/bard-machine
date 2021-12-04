@@ -1,6 +1,8 @@
 <script>
     import Color from "color";
     import globalStyles from "../style/globalStyles";
+    import tippy from "tippy.js";
+    import { onMount } from "svelte";
 
     export let isPlaying;
     export let mainColor;
@@ -14,6 +16,18 @@
         + `--iconColor: ${getIconColor()};`;
 
     $: iconClass = getIconClass(isPlaying, usePause);
+
+    $: changeTooptipContent(isPlaying);
+
+    let tooltip;
+
+    onMount(async() => {
+        tooltip = tippy(domElement, { content:  'Play sound' });
+    });
+
+    function changeTooptipContent(isPlaying) {
+        if(tooltip) tooltip.setContent((isPlaying ? (usePause ? 'Pause' : 'Stop') : 'Play') + ' sound');
+    }
 
     function getIconClass (isPlaying, usePause) {
         if(!isPlaying) return 'play';

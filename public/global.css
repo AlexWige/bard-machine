@@ -132,3 +132,12 @@ input:focus::placeholder {
 .custom-scroll::-webkit-scrollbar-track {
     background-color: rgba(0,0,0, 0.1);
 }
+
+.tippy-box {
+    background-color: #181818 !important;
+    border-radius: 2px !important;
+}
+
+.tippy-arrow {
+    color: #181818 !important;
+}

@@ -27,6 +27,7 @@
     "color": "^4.0.1",
     "lodash": "^4.17.21",
     "sirv-cli": "^1.0.0",
-    "svelte-preprocess": "^4.9.5"
+    "svelte-preprocess": "^4.9.5",
+    "tippy.js": "^6.3.7"
   }
 }

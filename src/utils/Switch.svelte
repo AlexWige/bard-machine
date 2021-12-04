@@ -3,12 +3,12 @@
     export let checked = false;
     export let bgColor = Color("#00000066");
     export let bgColorActive = Color("#ffffff99");
-
+    export let domElement;
     
     $: style = `--bgColor: ${checked ? bgColorActive.rgb() : bgColor.rgb()};`;
 </script>
 
-<label class="switch" style={style}>
+<label bind:this={domElement} class="switch" style={style}>
     <input type="checkbox" bind:checked />
     <span class="slider" />
 </label>
@@ -17,8 +17,8 @@
     .switch {
         position: relative;
         display: inline-block;
-        width: 36px;
-        height: 20px;
+        width: 32px;
+        height: 18px;
     }
 
     .switch input {
@@ -43,8 +43,8 @@
     .slider:before {
         position: absolute;
         content: "";
-        height: 18px;
-        width: 18px;
+        height: 16px;
+        width: 16px;
         left: 1px;
         bottom: 1px;
         background-color: white;
@@ -61,8 +61,6 @@
     }
 
     input:checked + .slider:before {
-        -webkit-transform: translateX(16px);
-        -ms-transform: translateX(16px);
-        transform: translateX(16px);
+        transform: translateX(14px);
     }
 </style>
