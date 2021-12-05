@@ -3,7 +3,7 @@
     export let checked = false;
     export let bgColor = Color("#00000066");
     export let bgColorActive = Color("#ffffff99");
-    export let domElement;
+    export let domElement = {};
     
     $: style = `--bgColor: ${checked ? bgColorActive.rgb() : bgColor.rgb()};`;
 </script>

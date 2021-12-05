@@ -11,17 +11,16 @@
     import Modal from "./modal/Modal.svelte";
     import 'tippy.js/dist/tippy.css';
     import tippy from "tippy.js";
+    const { ipcRenderer } = window.require('electron');
 
     $: style = `--bg: ${globalStyles.bg};`;
     
     let saveInterval;
 
-    function onCollectionLoaded() {
-        $onHomeScreen = false;
-    }
-
     onMount(async() => {
         pointerManager.onAppMount();
+        collectionLoader.onAppMount();
+        ipcRenderer.send('app-mounted');
 
         // Autosave collection every 30s
         saveInterval = setInterval(() => {
@@ -32,16 +31,18 @@
         tippy.setDefaultProps({ delay: [1000, 0] });
 
         // **** TEST BUTTON
-        // window.addEventListener('keydown', e => {
-        //     if(e.key != "t") return;
-        // });
+        window.addEventListener('keydown', e => {
+            if(e.key != "t") return;
+            localStorage.clear();
+        });
 
         // **** ON DEV
-        collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
-        $onHomeScreen = false;
+        // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        // $onHomeScreen = false;
     });
 
     onDestroy(async() => {
+        collectionLoader.onAppDestroy();
         pointerManager.onAppDestroy();
         clearInterval(saveInterval);
     });
@@ -50,7 +51,7 @@
 <main style={style}>
     <TopBar/>
     {#if $onHomeScreen}
-        <HomeScreen onCollectionLoaded={onCollectionLoaded}/>
+        <HomeScreen/>
     {:else}
         <SoundListView/>
         <ContextMenu/>

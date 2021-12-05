@@ -5,7 +5,30 @@ let dialogOpened = false;
 const dev = false;
 let window;
 
-app.on("ready", () => {
+const gotTheLock = app.requestSingleInstanceLock()
+    
+if (!gotTheLock) {
+    // Executed by second instance on start itself
+    const openedFile = process.argv.find(arg => arg.endsWith('.bmsounds'));
+    if(openedFile) app.quit()
+    else app.on('ready', onAppReady);
+} else {
+    // Executed by first instance when other instance is started
+    app.on('second-instance', (event, commandLine, workingDirectory) => {
+        if(!commandLine) return;
+        const openedFile = commandLine.find(arg => arg.endsWith('.bmsounds'));
+        if(openedFile) {
+            window.webContents.send('collection-open-path-selected', openedFile);
+            if (window) {
+                if (window.isMinimized()) window.restore()
+                window.focus()
+            }
+        }
+    });
+    app.on('ready', onAppReady);
+}
+
+function onAppReady() {
     window = new BrowserWindow({ 
         width: 1200, 
         height: 700,
@@ -25,7 +48,7 @@ app.on("ready", () => {
     
     updateMaximizeButton(window);
     
-    ipcMain.on('maximize-window', (e) => {
+    ipcMain.on('maximize-window', event => {
         if(window.isMaximized()) {
             window.unmaximize();
         } else {
@@ -46,7 +69,7 @@ app.on("ready", () => {
         window.webContents.send("app-focused");
     });
 
-    ipcMain.on('dialog-open-collection', (event) => {
+    ipcMain.on('dialog-open-collection', event => {
         if(dialogOpened) return;
         dialogOpened = true;
         dialog.showOpenDialog(window, { 
@@ -67,7 +90,7 @@ app.on("ready", () => {
         });
     });
 
-    ipcMain.on('dialog-import-sounds', (event) => {
+    ipcMain.on('dialog-import-sounds', event => {
         if(dialogOpened) return;
         dialogOpened = true;
         dialog.showOpenDialog(window, { 
@@ -91,7 +114,7 @@ app.on("ready", () => {
         });
     });
 
-    ipcMain.on('dialog-create-collection', (event) => {
+    ipcMain.on('dialog-create-collection', event => {
         if(dialogOpened) return;
         dialogOpened = true;
         dialog.showSaveDialog(window, { 
@@ -108,7 +131,16 @@ app.on("ready", () => {
             }
         });;
     });
-});
+
+    ipcMain.on('app-mounted', event => onOpenFile());
+}
+
+function onOpenFile() {
+    const openFilePath = process.argv.find(arg => arg.endsWith('.bmsounds'));
+    if (process.platform == 'win32' && openFilePath) {
+        window.webContents.send("collection-open-path-selected", openFilePath);
+    }
+}
 
 function updateMaximizeButton(window) {
     if(window.isMaximized()) {

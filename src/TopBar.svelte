@@ -4,8 +4,8 @@
     import collectionLoader from "./collectionLoader";
     import globalStyles from "./style/globalStyles";
     import tippy from "tippy.js";
-
     const { ipcRenderer } = window.require('electron');
+
     let maximizedWindow = false;
     let hoveringHomeButton = false;
 
@@ -18,6 +18,10 @@
 
         ipcRenderer.on('window-maximized', () => {
             maximizedWindow = true;
+        });
+
+        ipcRenderer.on('log', (e, message) => {
+            console.log(message);
         });
 
         tippy('#home-button', { content: 'Go to home menu...', delay: [1000, 0] });
