@@ -1,10 +1,33 @@
 import soundStore from "../sound-blocks/soundStore";
 import collectionLoader from "../collectionLoader";
 import { writable } from "svelte/store";
+const { ipcRenderer } = window.require('electron');
 
 export const inputModalActive = writable(false);
 
 let inputModalAPI = undefined;
+
+export function onAppMount() {
+    window.addEventListener('keydown', onKeyDown);
+}
+
+export function onAppDestroy() {
+    window.removeEventListener('keydown', onKeyDown);
+}
+
+function onKeyDown(event) {
+    if(event.ctrlKey) {
+            if(event.keyCode == 78) {
+            ipcRenderer.send('dialog-create-collection');
+        }
+        else if(event.keyCode == 79) {
+            ipcRenderer.send('dialog-open-collection');
+        }
+        else if(event.keyCode == 75) {
+            soundStore.stopAll();
+        }
+    }
+}
 
 export function registerInputModal(api) {
     inputModalAPI = api;

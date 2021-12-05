@@ -4,6 +4,7 @@
     import * as pointerManager from "./managers/pointerManager";
     import { onHomeScreen } from "./playerStore";
     import { onDestroy, onMount } from "svelte";
+    import * as hotkeys from "./hotkeys/hotkey-manager";
     import TopBar from "./TopBar.svelte";
     import SoundListView from "./SoundListView.svelte";
     import HomeScreen from "./HomeScreen.svelte";
@@ -20,6 +21,7 @@
     onMount(async() => {
         pointerManager.onAppMount();
         collectionLoader.onAppMount();
+        hotkeys.onAppMount();
         ipcRenderer.send('app-mounted');
 
         // Autosave collection every 30s
@@ -31,10 +33,10 @@
         tippy.setDefaultProps({ delay: [1000, 0] });
 
         // **** TEST BUTTON
-        window.addEventListener('keydown', e => {
-            if(e.key != "t") return;
-            localStorage.clear();
-        });
+        // window.addEventListener('keydown', e => {
+        //     if(e.key != "t") return;
+        //     localStorage.clear();
+        // });
 
         // **** ON DEV
         // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
@@ -44,6 +46,7 @@
     onDestroy(async() => {
         collectionLoader.onAppDestroy();
         pointerManager.onAppDestroy();
+        hotkeys.onAppDestroy();
         clearInterval(saveInterval);
     });
 </script>

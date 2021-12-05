@@ -6,7 +6,7 @@
 	import Switch from './utils/Switch.svelte';
     import VolumeSlider from './sound-blocks/VolumeSlider.svelte';
     import tippy from "tippy.js";
-    import { onMount } from "svelte";
+    import { onMount, onDestroy } from "svelte";
     
     $: style = `--barColor: ${globalStyles.bg.lighten(0.9).hex()};`;
 
@@ -16,10 +16,34 @@
         bigBlocksSwitch: undefined
     }
 
+    let bigBlockUnsubscribe;
+    let volumeUnsubscribe;
+
     onMount(async() => {
         tippy(dom.stopButton, { content: 'Stop all sounds' });
         tippy(dom.volumeSlider, { content: 'Global volume' });
         tippy(dom.bigBlocksSwitch, { content: 'Toggle big blocks' });
+        // Big blocks
+        bigBlocks.set(localStorage.getItem('use-big-blocks') == 'true');
+        bigBlockUnsubscribe = bigBlocks.subscribe(value => {
+            localStorage.setItem('use-big-blocks', value);
+        });
+        // Volume
+        let volume = 0.8;
+        try {
+            volume = parseFloat(localStorage.getItem('global-volume'));
+        } catch {
+            volume = 0.8;
+        }
+        globalVolume.set(volume);
+        volumeUnsubscribe = globalVolume.subscribe(value => {
+            localStorage.setItem('global-volume', value);
+        });
+    });
+
+    onDestroy(async() => {
+        bigBlockUnsubscribe();
+        volumeUnsubscribe();
     });
 </script>
 

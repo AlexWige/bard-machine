@@ -59,6 +59,7 @@
     }
 
     function onKeyDown(e) {
+        if(e.ctrlKey) return;
         let keyName = processKeyName(e.keyCode, e.key);
 
         if(isActive) {
