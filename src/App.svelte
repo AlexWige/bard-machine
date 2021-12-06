@@ -1,6 +1,7 @@
 <script>
     import globalStyles from "./style/globalStyles";
     import collectionLoader from "./collectionLoader";
+    import { collectionPath } from "./collectionPaths";
     import * as pointerManager from "./managers/pointerManager";
     import { onHomeScreen } from "./playerStore";
     import { onDestroy, onMount } from "svelte";
@@ -12,6 +13,7 @@
     import Modal from "./modal/Modal.svelte";
     import 'tippy.js/dist/tippy.css';
     import tippy from "tippy.js";
+    import soundStore from "./sound-blocks/soundStore";
     const { ipcRenderer } = window.require('electron');
 
     $: style = `--bg: ${globalStyles.bg};`;
@@ -26,17 +28,17 @@
 
         // Autosave collection every 30s
         saveInterval = setInterval(() => {
-            if(collectionLoader.collectionPath != '' && !onHomeScreen)
+            if(collectionPath.get() != '' && !onHomeScreen)
                 collectionLoader.saveCollection();
         }, 30000);
 
         tippy.setDefaultProps({ delay: [1000, 0] });
 
         // **** TEST BUTTON
-        // window.addEventListener('keydown', e => {
-        //     if(e.key != "t") return;
-        //     localStorage.clear();
-        // });
+        window.addEventListener('keydown', e => {
+            if(e.key != "t") return;
+            console.log(soundStore.get());
+        });
 
         // **** ON DEV
         // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');

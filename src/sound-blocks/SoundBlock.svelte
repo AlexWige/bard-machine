@@ -30,7 +30,7 @@
 
     let fader;
     let faderValue = 0;
-    let sound = new Audio(soundData.path);
+    let sound = new Audio(soundData.path.absolute);
 
     $: hotkeyName = soundData.hotkeyName ?? '';
     $: keyFontSize = getAssignKeySize(hotkeyName ? hotkeyName.length : 0, $bigBlocks); 
@@ -49,6 +49,10 @@
             } else {
                 isPlaying = !isPlaying;
             }
+        },
+        moveVolume: (delta) => {
+            soundData.volume += delta;
+            soundData.volume = _.clamp(soundData.volume, 0, 1);
         }
     }
 
@@ -124,7 +128,7 @@
         selectionManager.register(selectableAPI);
         contextMenuManager.register(contextMenuAPI);
         soundStore.setSoundAPI(id, api);
-        sound.src = soundData.path;
+        sound.src = soundData.path.absolute;
         sound.onended = () => {
             if(soundData.category != 'effects') sound.play();
             else isPlaying = false;

@@ -10,6 +10,11 @@ function createSoundStore() {
 		subscribe,
         update,
         set,
+        get: () => {
+            let content;
+            update(store => { content = store; return store; });
+            return content;
+        },
         closeCollection: () => {
             update(store => []);
         },

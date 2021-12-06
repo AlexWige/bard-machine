@@ -1,26 +1,16 @@
 <script>
     import globalStyles from "../style/globalStyles";
-    import { onDestroy, onMount } from "svelte";
-    import { apis } from "../playerStore";
-    import { inputModalActive } from "./hotkey-manager";
+    import { onMount } from "svelte";
+    import { inputModalActive, editedSoundID } from "./hotkey-manager";
     import * as hotkeyManager from "./hotkey-manager";
-
-    let currentSoundID;
-    
-    $: isActive = $inputModalActive;
 
     $: style = `--bgCache: ${globalStyles.bg.darken(0.5).fade(0.1).rgb()};`
         + `--boxBg: ${globalStyles.bg.lighten(0.6).rgb()};`
-        + `--displayed: ${isActive ? 'block' : 'none'};`
+        + `--displayed: ${$inputModalActive ? 'block' : 'none'};`
         + `--topBarHeight: ${globalStyles.topBarSize};`;
 
     onMount(async () => {
-        window.addEventListener('keydown', onKeyDown);
         hotkeyManager.registerInputModal(api);
-    });
-
-    onDestroy(async () => {
-        window.removeEventListener('keydown', onKeyDown);
     });
 
     const api = {
@@ -29,56 +19,16 @@
     }
     
     export function show(soundID) {
-        currentSoundID = soundID;
-        isActive = true;
+        editedSoundID.set(soundID);
+        inputModalActive.set(true);
     }
 
     export function hide() {
-        isActive = false;
-    }
-
-    function processKeyName(code, name) {
-        switch (code) {
-            case  8: return "⌫"; 
-            case  9: return "⇥"; 
-            case 13: return "↵"; 
-            case 16: return "⇧"; 
-            case 17: return "Ctl"; 
-            case 18: return "Alt"; 
-            case 20: return "⇪"; 
-            case 32: return "␣"; 
-            case 33: return "⇞"; 
-            case 34: return "⇟"; 
-            case 37: return "←"; 
-            case 38: return "↑"; 
-            case 39: return "→"; 
-            case 40: return "↓"; 
-            case 46: return "Del"; 
-            default: return name.toUpperCase();
-        }
-    }
-
-    function onKeyDown(e) {
-        if(e.ctrlKey) return;
-        let keyName = processKeyName(e.keyCode, e.key);
-
-        if(isActive) {
-            e.preventDefault();
-            if(e.keyCode == 27) {
-                hide();
-                return;
-            }
-            if(e.keyCode == 17 || e.keyCode == 16 || e.keyCode == 144) return;
-            hotkeyManager.setSoundHotkey(currentSoundID, e.keyCode, keyName);
-            hide();
-        } else if(!apis.modal.isVisible()) {
-            const sound = hotkeyManager.getSoundWithHotkey(e.keyCode);
-            if(sound && sound.api) sound.api.onHotkey();
-        }
+        inputModalActive.set(false);
     }
     
     function unassignKey() {
-        hotkeyManager.setSoundHotkey(currentSoundID, -1, '');
+        hotkeyManager.setSoundHotkey($editedSoundID, -1, '');
         hide();
     }
 </script>

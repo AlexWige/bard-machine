@@ -81,6 +81,10 @@ export function toggleSelected(api) {
 
 /**************** UTILITY ****************/
 
+export function getAllSelected() {
+    return selected;
+}
+
 export function isSelected(api) {
     return selected.includes(api);
 }

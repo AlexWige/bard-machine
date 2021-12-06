@@ -82,7 +82,7 @@
         margin: 9px auto;
         width: 90%;
         height: 40px;
-        max-width: 500px;
+        max-width: 450px;
 
         i.stop {
             position: relative;
@@ -117,7 +117,7 @@
             position: absolute;
             top: 16px;
             left: 65px;
-            right: 95px;
+            right: 105px;
             height: 8px;
         }
 

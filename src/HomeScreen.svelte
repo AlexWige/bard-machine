@@ -1,8 +1,8 @@
 <script>
     import globalStyles from "./style/globalStyles";
-    import { recentlyOpened } from "./collectionLoader";
+    import { recentlyOpened } from "./collectionPaths";
     import collectionLoader from "./collectionLoader";
-    import { fly, fade } from "svelte/transition";
+    import { fly } from "svelte/transition";
     const { ipcRenderer } = window.require('electron');
 
     $: style = `--bg: ${globalStyles.bg};`

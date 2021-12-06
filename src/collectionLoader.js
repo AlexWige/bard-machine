@@ -1,12 +1,10 @@
-const fs = require('fs');
 import soundStore from './sound-blocks/soundStore';
-import gettableStore from './utils/gettableStore';
 const { ipcRenderer } = window.require('electron');
 import { onHomeScreen } from "./playerStore";
+import { collectionPath, recentlyOpened } from './collectionPaths';
 import _ from 'lodash';
-
-export const collectionPath = gettableStore('');
-export const recentlyOpened = gettableStore('');
+const fs = require('fs');
+const path = require('path');
 
 function onAppMount() {
     refreshRecentlyOpened();
@@ -34,10 +32,16 @@ function createCollection(path) {
 
 function openCollection(path) {
     closeCollection();
+    if(!path || path == '') return;
     addToRecentlyOpened(path);
     collectionPath.set(path);
-    onHomeScreen.set(false);
-    refreshCollection();
+    if(fs.existsSync(path)) {
+        fs.readFile(path, "utf8", (err, data) => {
+            soundStore.fromJSON(data);
+            refreshSoundPaths();
+            onHomeScreen.set(false);
+        });
+    }
 }
 
 function closeCollection() {
@@ -52,14 +56,27 @@ function saveCollection() {
     fs.writeFile(path, jsonData, "utf8", () => {});
 }
 
-function refreshCollection() {
-    const path = collectionPath.get();
-    if(!path || path == '') return;
-    if(fs.existsSync(path)) {
-        fs.readFile(path, "utf8", (err, data) => {
-            soundStore.fromJSON(data);
+function refreshSoundPaths() {
+    soundStore.update(store => {
+        store.forEach(sound => {
+            sound.data.missingFile = false;
+            const collectionDirname = path.dirname(collectionPath.get());
+            const reconstructedPath = path.join(collectionDirname, sound.data.path.relative);
+            const absoluteExists = fs.existsSync(sound.data.path.absolute);
+            const relativeExists = fs.existsSync(reconstructedPath);
+
+            if(!absoluteExists && relativeExists) {
+                sound.data.path.absolute = reconstructedPath;
+            } else if(absoluteExists && !relativeExists) {
+                sound.data.path.relative = path.relative(collectionDirname, sound.data.path.absolute);
+                console.log(sound.data.path.relative);
+            } else if(!absoluteExists && !relativeExists)  {
+                sound.data.missingFile = true;
+            }
         });
-    }
+        return store;
+    });
+    saveCollection();
 }
 
 function addSounds(paths, category) {
@@ -74,7 +91,7 @@ function refreshRecentlyOpened() {
 
     for (let i = storedPaths.length - 1; i >= 0; i--) {
         if(!fs.existsSync(storedPaths[i])) {
-            storedPaths.splice(i, 1);
+            storedPaths = storedPaths.splice(i, 1);
         }
     }
 
