@@ -91,7 +91,7 @@ function refreshRecentlyOpened() {
 
     for (let i = storedPaths.length - 1; i >= 0; i--) {
         if(!fs.existsSync(storedPaths[i])) {
-            storedPaths = storedPaths.splice(i, 1);
+            storedPaths.splice(i, 1);
         }
     }
 
@@ -157,5 +157,6 @@ export default {
     createCollection,
     addSounds,
     saveCollection,
+    refreshRecentlyOpened,
     closeCollection
 };

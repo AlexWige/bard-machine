@@ -3,6 +3,7 @@
     import { recentlyOpened } from "./collectionPaths";
     import collectionLoader from "./collectionLoader";
     import { fly } from "svelte/transition";
+    import { onMount } from "svelte";
     const { ipcRenderer } = window.require('electron');
 
     $: style = `--bg: ${globalStyles.bg};`
@@ -15,6 +16,10 @@
         function getFilename(path) {
             return path.split('\\').pop().replace('.bmsounds', '');
         }
+
+        onMount(async() => {
+            collectionLoader.refreshRecentlyOpened();
+        });
 </script>
 
 <div id="home-screen-view" style={style} class="custom-scroll">

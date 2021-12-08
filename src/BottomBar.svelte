@@ -35,6 +35,7 @@
         } catch {
             volume = 0.8;
         }
+        if(!volume || isNaN(volume)) volume = 0.8;
         globalVolume.set(volume);
         volumeUnsubscribe = globalVolume.subscribe(value => {
             localStorage.setItem('global-volume', value);
