@@ -24,7 +24,7 @@
             console.log(message);
         });
 
-        tippy('#home-button', { content: 'Go to home menu...', delay: [1000, 0] });
+        tippy('#home-button', { content: 'Go to home menu...', delay: [1000, 0], touch: false });
     });
 
     function onClickTitle() {
