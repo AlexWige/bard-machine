@@ -53,7 +53,7 @@
         }
 
         .container {
-            width: 100%;
+            width: 95%;
             max-width: 1450px;
             margin: auto;
         }

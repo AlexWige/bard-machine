@@ -13,6 +13,8 @@ let dragStartPosition = { x: 0, y: 0};
 let dragDelta = { x: 0, y: 0 };
 let currentDraggableNode = false;
 let isPressed = false;
+let holdStillTimer;
+let isHoldingStill = false;
 
 /**************** EVENTS SETUP ****************/
 
@@ -22,6 +24,7 @@ export async function onAppMount() {
     window.addEventListener('pointerdown', onPointerDown);
     window.addEventListener('pointermove', onPointerMove);
     window.addEventListener('pointerup', onPointerUp);
+    document.body.addEventListener('touchmove', onTouchMove, { passive: false });
 }
 
 export async function onAppDestroy() {
@@ -30,6 +33,7 @@ export async function onAppDestroy() {
     window.removeEventListener('pointerdown', onPointerDown);
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
+    document.body.removeEventListener('touchmove', onTouchMove, { passive: false });
 }
 
 /***************** CALLBACKS ******************/
@@ -81,6 +85,7 @@ function dragEnd(e) {
 // Only used for touch (context click event will cancel this one on hold)
 function onClickEvent(e) {
     if(e.sourceCapabilities.firesTouchEvents) {
+        e.isTouchEvent = true;
         click(e);
     }
 }
@@ -96,6 +101,18 @@ function onPointerDown(e) {
     isPressed = true;
     dragStartPosition = getXAndY(e);
     currentDraggableNode = getDraggableNodeFromPath(e.path);
+
+    if(e.pointerType == 'touch') {
+        isHoldingStill = false;
+        if(holdStillTimer) clearInterval(holdStillTimer);
+        holdStillTimer = setTimeout(() => {
+            isHoldingStill = true;
+            const selectable = selectionManager.findAPIFromPath(e.path);
+            if(selectable && !selectionManager.isSelected(selectable)) {
+                selectionManager.onLeftClick(e);
+            }
+        }, 600);
+    }
 }
 
 function onPointerMove(e) {
@@ -108,15 +125,23 @@ function onPointerMove(e) {
 
     if(!isDragging) {
         if((Math.abs(dragDelta.x) + Math.abs(dragDelta.y)) > deadZone) {
+            if(e.pointerType == 'touch' && !isHoldingStill) {
+                isHoldingStill = false;
+                onPointerUp(e);
+                if(holdStillTimer) clearInterval(holdStillTimer);
+                return;
+            }
             dragStart(e);
             isDragging = true;
         }
     } else {
+        e.preventDefault();
         dragMove(e);
     }
 }
 
 function onPointerUp(e) {
+    isHoldingStill = false;
     if(e.pointerType == 'mouse' && e.button != 0) return;
     isPressed = false;
     if(isDragging) {
@@ -125,9 +150,14 @@ function onPointerUp(e) {
     } else {
         // Only used for click with mouse
         if(e.pointerType != 'touch')  {
+            e.isTouchEvent = false;
             click(e);
         }
     }
+}
+
+function onTouchMove(e) {
+    if(isDragging) e.preventDefault();
 }
 
 /******* UTILITY *******/

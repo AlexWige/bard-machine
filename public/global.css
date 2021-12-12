@@ -55,6 +55,10 @@ button {
     cursor: copy !important;
 }
 
+.stop-scroll-touch {
+    touch-action: none;
+}
+
 button.big {
     padding: 4.5px 18px;
     font-size: 16px;

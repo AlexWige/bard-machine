@@ -307,7 +307,6 @@
         padding: 8px 0;
         height: 52px;
         width: 100%;
-        touch-action: none;
 
         :global(.drop-preview-bar) {
             border-color: var(--mainColorLighter, white) !important;

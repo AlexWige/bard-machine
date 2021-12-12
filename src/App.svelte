@@ -41,8 +41,8 @@
         });
 
         // **** ON DEV
-        collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
-        $onHomeScreen = false;
+        // collectionLoader.openCollection('C:/Users/alexa/Desktop/tests.bmsounds');
+        // $onHomeScreen = false;
     });
 
     onDestroy(async() => {

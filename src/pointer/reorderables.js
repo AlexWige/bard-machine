@@ -59,10 +59,11 @@ export function unregister(api) {
 export function onDragStart(dragEvent) {
     currentAPI = findAPIFromNode(dragEvent.draggableNode);
     if(!currentAPI) return;
+    const draggedNode = currentAPI.getNode();
+    if(!draggedNode) return;
 
     isDragging = true;
     document.body.classList.toggle('grabbing', true);
-    const draggedNode = currentAPI.getNode();
     draggedNode.appendChild(dropPreviewBar);
     currentSiblings = [...draggedNode.parentNode.children];
     currentSiblings = currentSiblings.filter(n => findAPIFromNode(n));
