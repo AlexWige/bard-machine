@@ -11,9 +11,11 @@
     export let isBig = true;
     export let usePause = false;
     export let domElement = {};
+    export let disabled = false;
 
-    $: style = `--mainColor: ${isPlaying ? 'white' : mainColor.hex()};`
-        + `--iconColor: ${getIconColor()};`;
+    $: style = `--mainColor: ${disabled ? globalStyles.bg.lighten(1.2) : (isPlaying ? 'white' : mainColor.hex())};`
+        + `--iconColor: ${getIconColor()};`
+        + `--cursor: ${disabled ? 'no-drop' : 'pointer'};`;
 
     $: iconClass = getIconClass(isPlaying, usePause);
 
@@ -43,6 +45,7 @@
     }
 
     function onPointerDown(e) {
+        if(disabled) return;
         if(e.button == 0 || e.pointerType != 'mouse') {
             if(onPressed) onPressed(!isPlaying);
             isPlaying = !isPlaying;
@@ -65,7 +68,7 @@
         width: 58px;
         border-radius: 50%;
         top: 5px;
-        cursor: pointer;
+        cursor: var(--cursor, pointer);
         box-sizing: border-box;
         text-align: center;
         padding-top: 12px;

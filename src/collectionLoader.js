@@ -8,15 +8,19 @@ const path = require('path');
 
 function onAppMount() {
     refreshRecentlyOpened();
+    ipcRenderer.addListener('app-focused', onAppFocus);
     ipcRenderer.addListener('collection-open-path-selected', onOpenCollectionEvent);
     ipcRenderer.addListener('collection-create-path-selected', onCreateCollectionEvent);
+    ipcRenderer.addListener('replaced-sound-file-path', onReplacedSoundFilePath);
     document.body.addEventListener("dragover", onDocumentDragover);
     document.body.addEventListener("drop", onDocumentDrop);    
 }
 
 function onAppDestroy() {
+    ipcRenderer.removeListener('app-focused', onAppFocus);
     ipcRenderer.removeListener('collection-open-path-selected', onOpenCollectionEvent);
     ipcRenderer.removeListener('collection-create-path-selected', onCreateCollectionEvent);
+    ipcRenderer.removeListener('replaced-sound-file-path', onReplacedSoundFilePath);
     document.body.removeEventListener("dragover", onDocumentDragover);
     document.body.removeEventListener("drop", onDocumentDrop);
 }
@@ -69,7 +73,6 @@ function refreshSoundPaths() {
                 sound.data.path.absolute = reconstructedPath;
             } else if(absoluteExists && !relativeExists) {
                 sound.data.path.relative = path.relative(collectionDirname, sound.data.path.absolute);
-                console.log(sound.data.path.relative);
             } else if(!absoluteExists && !relativeExists)  {
                 sound.data.missingFile = true;
             }
@@ -128,6 +131,24 @@ function addToRecentlyOpened(path) {
 }
 
 /************* EVENT LISTENERS  ****************/
+
+function onAppFocus() {
+    refreshSoundPaths();
+}
+
+function onReplacedSoundFilePath(e, data) {
+    let soundAPI;
+    soundStore.update(store => {
+        const sound = store.find(s => s.id == data.id);
+        if(sound) {
+            soundAPI = sound.api;
+            sound.data.path.absolute = data.path;
+        }
+        return store;
+    });
+    refreshSoundPaths();
+    if(soundAPI) soundAPI.refreshAudioPath();
+}
 
 function onCreateCollectionEvent(e, path) {
     createCollection(path);

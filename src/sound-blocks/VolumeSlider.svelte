@@ -2,6 +2,7 @@
     import Color from "color";
     import { onMount } from "svelte";
     import collectionLoader from "../collectionLoader";
+    import globalStyles from '../style/globalStyles';
 
     export let volume;
     export let mainColor;
@@ -9,6 +10,7 @@
     export let onChange = (v) => {};
     export let isBig = true;
     export let domElement = {};
+    export let disabled = false;
 
     let bar;
     let activeBar;
@@ -17,7 +19,8 @@
 
     $: updateVolume(volume);
 
-    $: style = `--barColor: ${isPlaying ? Color('white') : mainColor.hex()};`;
+    $: style = `--barColor: ${disabled ? globalStyles.bg.lighten(1.2) : (isPlaying ? Color('white') : mainColor.hex())};`
+        + `--cursor: ${disabled ? 'normal' : 'pointer'}`;
 
     onMount(async() => {
         moveKnob(volume);
@@ -31,6 +34,7 @@
     }
 
     function onPointerDown(e) {
+        if(disabled) return;
         if(e.pointerType == "mouse" && e.button != 0) return;
         
         onPointerMove(e);
@@ -44,6 +48,7 @@
     }
 
     function onPointerUp(e) {
+        if(disabled) return;
         window.removeEventListener('pointermove', onPointerMove);
         window.removeEventListener('pointerup', onPointerUp);
         window.removeEventListener('touchmove', onPointerMove);
@@ -120,7 +125,7 @@
         }
 
         .bar {
-            cursor: pointer;
+            cursor: var(--cursor, pointer);
             position: absolute;
             top: -$safe-margin;
             bottom: -$safe-margin;

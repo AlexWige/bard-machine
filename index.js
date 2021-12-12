@@ -132,6 +132,30 @@ function onAppReady() {
         });;
     });
 
+    
+
+    ipcMain.on('replace-sound-file', (event, id) => {
+        if(dialogOpened) return;
+        dialogOpened = true;
+        dialog.showOpenDialog(window, { 
+            title: 'Open Bard Machine Sounds', 
+            filters: [
+                {
+                    name: "sounds",
+                    extensions: ['mp3', 'wav', 'ogg']
+                },
+            ]
+        })
+        .then((data) => {
+            dialogOpened = false;
+            let path = '';
+            if(!data.canceled && data.filePaths.length > 0) {
+                path = data.filePaths.find(p => isMusicFile(p));   
+            }
+            event.sender.send('replaced-sound-file-path', { path: path, id: id });
+        });
+    });    
+
     ipcMain.on('app-mounted', event => onOpenFile());
 }
 

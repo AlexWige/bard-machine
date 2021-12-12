@@ -10,7 +10,7 @@
         onDragEnd: dragEvent => {} // (optional)
 */
 import _ from 'lodash';
-import * as selectionManager from "./selectionManager";
+import * as selectionManager from "./selection";
 
 // List of Reorderable APIs
 export const reorderables = [];

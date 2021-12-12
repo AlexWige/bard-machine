@@ -1,7 +1,7 @@
 <script>
 	import globalStyles from './style/globalStyles';
     import { onMount } from "svelte";
-    import * as contextMenuManager from './managers/contextMenuManager';
+    import * as contextMenuManager from './pointer/contextMenu';
     import { bigBlocks } from './playerStore';
 
 	export let x = 0;

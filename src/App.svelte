@@ -2,7 +2,7 @@
     import globalStyles from "./style/globalStyles";
     import collectionLoader from "./collectionLoader";
     import { collectionPath } from "./collectionPaths";
-    import * as pointerManager from "./managers/pointerManager";
+    import * as pointerManager from "./pointer/pointerManager";
     import { onHomeScreen } from "./playerStore";
     import { onDestroy, onMount } from "svelte";
     import * as hotkeys from "./hotkeys/hotkey-manager";
@@ -32,7 +32,7 @@
                 collectionLoader.saveCollection();
         }, 30000);
 
-        tippy.setDefaultProps({ delay: [1000, 0] });
+        tippy.setDefaultProps({ delay: [1000, 0], touch: false });
 
         // **** TEST BUTTON
         window.addEventListener('keydown', e => {
@@ -41,8 +41,8 @@
         });
 
         // **** ON DEV
-        // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
-        // $onHomeScreen = false;
+        collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        $onHomeScreen = false;
     });
 
     onDestroy(async() => {

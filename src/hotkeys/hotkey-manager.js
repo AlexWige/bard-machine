@@ -1,7 +1,8 @@
 import soundStore from "../sound-blocks/soundStore";
 import collectionLoader from "../collectionLoader";
 import gettableStore from "../utils/gettableStore";
-import * as selectionManager from "../managers/selectionManager";
+import * as selectionManager from "../pointer/selection";
+import { apis } from "../playerStore";
 const { ipcRenderer } = window.require('electron');
 
 export const inputModalActive = gettableStore(false);
@@ -19,6 +20,7 @@ export function onAppDestroy() {
 
 function onKeyDown(e) {
     if(e.ctrlKey && e.shiftKey) return;
+    if(apis.modal.isVisible()) return;
     
     // Ctrl+N → New collection...
     if(e.ctrlKey && e.keyCode == 78) {

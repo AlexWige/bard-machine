@@ -8,12 +8,13 @@
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
-    import * as reorderableManager from "../managers/reorderablesManager";
-    import * as selectionManager from "../managers/selectionManager";
-    import * as contextMenuManager from "../managers/contextMenuManager";
+    import * as reorderables from "../pointer/reorderables";
+    import * as selection from "../pointer/selection";
+    import * as contextMenu from "../pointer/contextMenu";
     import collectionLoader from "../collectionLoader";
     import { getInputModal } from "../hotkeys/hotkey-manager";
     import tippy from 'tippy.js';
+    const { ipcRenderer } = window.require('electron');
     
     export let id;
     export let soundData;
@@ -34,6 +35,7 @@
 
     $: hotkeyName = soundData.hotkeyName ?? '';
     $: keyFontSize = getAssignKeySize(hotkeyName ? hotkeyName.length : 0, $bigBlocks); 
+    $: missing = soundData.missingFile;
 
     const api = {
         getID: () => id,
@@ -53,6 +55,10 @@
         moveVolume: (delta) => {
             soundData.volume += delta;
             soundData.volume = _.clamp(soundData.volume, 0, 1);
+        },
+        refreshAudioPath: () => {
+            if(!sound) sound = new Audio(soundData.path.absolute);
+            else sound.src = soundData.path.absolute;
         }
     }
 
@@ -69,7 +75,7 @@
             if(!node.dataset || !node.dataset.id) return;
             soundStore.update(store => {
                 const targetSound = soundStore.getItemByID(node.dataset.id);
-                return reorderableManager.moveArrayItemAfter(store, soundStore.getItemByID(id), targetSound);
+                return reorderables.moveArrayItemAfter(store, soundStore.getItemByID(id), targetSound);
             });
             collectionLoader.saveCollection();
         },
@@ -77,7 +83,7 @@
             if(!node.dataset || !node.dataset.id) return;
             soundStore.update(store => {
                 const targetSound = soundStore.getItemByID(node.dataset.id);
-                return reorderableManager.moveArrayItemBefore(store, soundStore.getItemByID(id), targetSound);
+                return reorderables.moveArrayItemBefore(store, soundStore.getItemByID(id), targetSound);
             });
             collectionLoader.saveCollection();
         }
@@ -85,48 +91,13 @@
 
     const contextMenuAPI = {
         getNode: () => dom.soundBlock,
-        getOptions: () => [
-            { 
-                id: 'stop-sound-block',
-                solo: 'Stop',
-                multiple: 'Stop sounds',
-                onClickEach: () => stopSound()
-            },
-            { 
-                id: 'rename-sound-block',
-                solo: 'Rename...',
-                onClickEach: () => {
-                    apis.modal.show(
-                        "Rename sound", 
-                        [
-                            { name: "Cancel", hotkey: 'Escape', onClick: () => apis.modal.hide() },
-                            { name: "OK", hotkey: 'Enter', onClick: () => {
-                                let newName = apis.modal.getInputValue();
-                                soundStore.renameSound(id, newName);
-                                apis.modal.hide();
-                                collectionLoader.saveCollection();
-                            }}
-                        ],
-                        { value: soundData.category, placeHolder: 'Enter sound name...' }
-                    );
-                }
-            },
-            { 
-                id: 'remove-sound-block',
-                solo: 'Remove',
-                multiple: 'Remove sounds',
-                onClickEach: () => {
-                    soundStore.removeSound(id);
-                },
-                saveAfter: true
-            }
-        ]
+        getOptions: () => getContextMenuOptions()
     }
     
     onMount(async () => {
-        reorderableManager.register(reorderableAPI);
-        selectionManager.register(selectableAPI);
-        contextMenuManager.register(contextMenuAPI);
+        reorderables.register(reorderableAPI);
+        selection.register(selectableAPI);
+        contextMenu.register(contextMenuAPI);
         soundStore.setSoundAPI(id, api);
         sound.src = soundData.path.absolute;
         sound.onended = () => {
@@ -139,9 +110,9 @@
     });
     
     onDestroy(async() => {
-        reorderableManager.unregister(reorderableAPI);
-        selectionManager.unregister(selectableAPI);
-        contextMenuManager.unregister(contextMenuAPI);
+        reorderables.unregister(reorderableAPI);
+        selection.unregister(selectableAPI);
+        contextMenu.unregister(contextMenuAPI);
         sound.pause();
         sound.remove();
         fader.pause();
@@ -161,6 +132,58 @@
     $: onVolumeChange(soundData.volume, $globalVolume, faderValue);
 
     $: onPlayingStateChange(isPlaying);
+
+    function getContextMenuOptions() {
+        let options = [];
+
+        if(!missing) { 
+            options.push({ 
+                id: 'stop-sound-block',
+                solo: 'Stop',
+                multiple: 'Stop sounds',
+                onClickEach: () => stopSound()
+            });
+            options.push({ 
+                id: 'rename-sound-block',
+                solo: 'Rename...',
+                onClickEach: () => {
+                    apis.modal.show(
+                        "Rename sound", 
+                        [
+                            { name: "Cancel", hotkey: 'Escape', onClick: () => apis.modal.hide() },
+                            { name: "OK", hotkey: 'Enter', onClick: () => {
+                                let newName = apis.modal.getInputValue();
+                                soundStore.renameSound(id, newName);
+                                apis.modal.hide();
+                                collectionLoader.saveCollection();
+                            }}
+                        ],
+                        { value: soundData.title, placeHolder: 'Enter sound name...' }
+                    );
+                }
+            });
+        } else {
+            options.push({ 
+                id: 'replace-sound-block',
+                solo: 'Replace file...',
+                onClickEach: () => {
+                    ipcRenderer.send('replace-sound-file', id);
+                }
+            });
+        }
+
+        options.push({ 
+            id: 'remove-sound-block',
+            solo: 'Remove',
+            multiple: 'Remove sounds',
+            onClickEach: () => {
+                soundStore.removeSound(id);
+            },
+            saveAfter: true
+        });
+
+        return options;
+    }
 
     function getMainColor(blockType) {
         switch (blockType) {
@@ -200,6 +223,7 @@
     }
 
     function onPlayingStateChange(play) {
+        if(play && missing) return;
         let skipFade = false;
 
         if(play) {
@@ -230,19 +254,21 @@
     }
 
     function onAssignButtonPressed(e) {
+        if(missing) return;
         getInputModal()?.show(id);
     }
 </script>
 
 <div 
-    class="sound-block" class:small={!$bigBlocks} class:selected={isSelected} style="{style}"
+    class="sound-block" class:small={!$bigBlocks} class:selected={isSelected} class:missing={missing} style="{style}"
     bind:this={dom.soundBlock}
     data-id={id}
 >
     <div class="main-box" bind:this={dom.mainBox}>
         <div class="info-zone" class:active={isPlaying}>
             <div class="info-bar">
-                {soundData.title ?? ""}
+                {#if missing}<span class="missing-file-icon"></span>{/if}
+                <span class="title">{soundData.title ?? ""}</span>
             </div>
             <div class="volume">
                 <VolumeSlider 
@@ -250,6 +276,7 @@
                     bind:isBig={$bigBlocks} 
                     mainColor={mainColor} 
                     bind:isPlaying={isPlaying} 
+                    bind:disabled={missing}
                     bind:volume={soundData.volume}
                 />
             </div>
@@ -263,6 +290,7 @@
         usePause= {soundData.category != 'effects'} 
         bind:isBig={$bigBlocks} 
         mainColor={mainColor} 
+        bind:disabled={missing}
         bind:isPlaying={isPlaying}
     />
     <Fader 
@@ -430,6 +458,36 @@
                     bottom: 8px;
                     right: 40%;
                     padding-right: 8px;
+                }
+            }
+        }
+
+        &.missing {
+            .missing-file-icon {
+                position: relative;
+                display: inline-block;
+                font-family: 'icomoon';
+                width: 22px;
+
+                &::before {
+                    content: "\e905";
+                    position: absolute;
+                    display: block;
+                    top: -14px;
+                    color: rgb(255, 108, 108);
+                    font-size: 18px;
+                }
+            }
+
+            .info-bar {
+                color: rgb(255, 166, 166);
+            }
+
+            .assign-btn {
+                cursor: default;
+
+                &:hover {
+                    transform: none;
                 }
             }
         }
