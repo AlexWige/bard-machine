@@ -1,8 +1,8 @@
-import soundStore from "../sound-blocks/soundStore";
-import collectionLoader from "../collectionLoader";
-import gettableStore from "../utils/gettableStore";
+import soundStore from "../sound-blocks/sound-store";
+import collectionLoader from "../collection-loader";
+import gettableStore from "../utils/gettable-store";
 import * as selectionManager from "../pointer/selection";
-import { apis } from "../playerStore";
+import { apis } from "../player-store";
 const { ipcRenderer } = window.require('electron');
 
 export const inputModalActive = gettableStore(false);

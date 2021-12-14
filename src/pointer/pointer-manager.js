@@ -6,7 +6,7 @@
 */
 import * as selectionManager from "./selection";
 import * as reorderableManager from "./reorderables";
-import * as contextMenuManager from "./contextMenu"
+import * as contextMenuManager from "./context-menu"
 
 let isDragging = false;
 let dragStartPosition = { x: 0, y: 0};

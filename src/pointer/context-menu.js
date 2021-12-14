@@ -23,7 +23,7 @@
 */
 import _ from "lodash";
 import * as selectionManager from "./selection";
-import collectionLoader from "../collectionLoader";
+import collectionLoader from "../collection-loader";
 
 // Context menu svelte element
 let contextMenuAPI;

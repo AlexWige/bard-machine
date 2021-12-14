@@ -1,7 +1,7 @@
 <script>
     const { ipcRenderer } = window.require('electron');
-    import collectionLoader from "./collectionLoader";
-    import globalStyles from './style/globalStyles';
+    import collectionLoader from "./collection-loader";
+    import globalStyles from './style/global-styles';
     import tippy from "tippy.js";
     import { onMount } from "svelte";
 

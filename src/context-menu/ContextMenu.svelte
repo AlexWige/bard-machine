@@ -1,8 +1,9 @@
 <script>
-	import globalStyles from './style/globalStyles';
+	import globalStyles from '../style/global-styles';
     import { onMount } from "svelte";
-    import * as contextMenuManager from './pointer/contextMenu';
-    import { bigBlocks } from './playerStore';
+    import * as contextMenuManager from '../pointer/context-menu';
+    import { bigBlocks } from '../player-store';
+    import SoundControls from "./ContextMenuSoundControls.svelte";
 
 	export let x = 0;
 	export let y = 0;
@@ -43,6 +44,9 @@
 {#if visible && options.length > 0}
     <div style="top: {y}px; left: {x}px; {style}" id="context-menu">
         <ul>
+            <!-- <li id="context-sound-controls">
+                <SoundControls/>
+            </li> -->
             {#each options as option, i}
                 <li on:click={() => { onClickOption(option) }}>{@html option.name}</li>
             {/each}
@@ -52,7 +56,7 @@
 
 
 <style lang='scss'>
-	div {
+	div#context-menu {
 		display: block;
         position: fixed;
         width: 230px;
@@ -71,6 +75,7 @@
             list-style: none;
 
             li {
+                position: relative;
                 display: block;
                 padding: var(--verticalPadding, 4px) 10px;
                 border-bottom: 1px rgba(white, 0.2) solid;
@@ -82,6 +87,14 @@
 
                 &:last-of-type {
                     border-bottom: none;
+                }
+
+                &#context-sound-controls {
+                    cursor: default;
+                    
+                    &:hover {
+                        background-color: inherit;
+                    }
                 }
             }
         }

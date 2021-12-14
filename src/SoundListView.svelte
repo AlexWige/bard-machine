@@ -1,5 +1,5 @@
 <script>
-    import globalStyles from "./style/globalStyles";
+    import globalStyles from "./style/global-styles";
     import BottomBar from "./BottomBar.svelte";
     import InputModal from "./hotkeys/InputModal.svelte";
     import SoundCategory from "./SoundCategory.svelte";
@@ -53,7 +53,7 @@
         }
 
         .container {
-            width: 95%;
+            width: 94%;
             max-width: 1450px;
             margin: auto;
         }

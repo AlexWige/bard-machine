@@ -1,5 +1,5 @@
 <script>
-    import globalStyles from "../style/globalStyles";
+    import globalStyles from "../style/global-styles";
     import { onMount } from "svelte";
     import { inputModalActive, editedSoundID } from "./hotkey-manager";
     import * as hotkeyManager from "./hotkey-manager";

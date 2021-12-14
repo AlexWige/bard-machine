@@ -1,17 +1,17 @@
 <script>
     import PlayButton from './PlayButton.svelte';
     import VolumeSlider from './VolumeSlider.svelte';
-    import globalStyles from '../style/globalStyles';
+    import globalStyles from '../style/global-styles';
     import Color from 'color';
-    import soundStore from './soundStore';
-    import { globalVolume, bigBlocks, apis } from '../playerStore';
+    import soundStore from './sound-store';
+    import { globalVolume, bigBlocks, apis } from '../player-store';
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
     import * as reorderables from "../pointer/reorderables";
     import * as selection from "../pointer/selection";
-    import * as contextMenu from "../pointer/contextMenu";
-    import collectionLoader from "../collectionLoader";
+    import * as contextMenu from "../pointer/context-menu";
+    import collectionLoader from "../collection-loader";
     import { getInputModal } from "../hotkeys/hotkey-manager";
     import tippy from 'tippy.js';
     const { ipcRenderer } = window.require('electron');

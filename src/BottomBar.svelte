@@ -1,8 +1,8 @@
 <script>
     import Color from 'color';
-    import globalStyles from './style/globalStyles';
-    import { globalVolume, bigBlocks } from './playerStore';
-    import soundStore from './sound-blocks/soundStore';
+    import globalStyles from './style/global-styles';
+    import { globalVolume, bigBlocks } from './player-store';
+    import soundStore from './sound-blocks/sound-store';
 	import Switch from './utils/Switch.svelte';
     import VolumeSlider from './sound-blocks/VolumeSlider.svelte';
     import tippy from "tippy.js";

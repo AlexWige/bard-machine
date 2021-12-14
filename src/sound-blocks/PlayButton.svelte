@@ -1,6 +1,6 @@
 <script>
     import Color from "color";
-    import globalStyles from "../style/globalStyles";
+    import globalStyles from "../style/global-styles";
     import tippy from "tippy.js";
     import { onMount } from "svelte";
 

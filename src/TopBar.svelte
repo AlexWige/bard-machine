@@ -1,8 +1,8 @@
 <script>
     import { onMount } from "svelte";
-    import { onHomeScreen } from "./playerStore";
-    import collectionLoader from "./collectionLoader";
-    import globalStyles from "./style/globalStyles";
+    import { onHomeScreen } from "./player-store";
+    import collectionLoader from "./collection-loader";
+    import globalStyles from "./style/global-styles";
     import tippy from "tippy.js";
     const { ipcRenderer } = window.require('electron');
 

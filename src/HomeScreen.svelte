@@ -1,7 +1,7 @@
 <script>
-    import globalStyles from "./style/globalStyles";
-    import { recentlyOpened } from "./collectionPaths";
-    import collectionLoader from "./collectionLoader";
+    import globalStyles from "./style/global-styles";
+    import { recentlyOpened } from "./collection-paths";
+    import collectionLoader from "./collection-loader";
     import { fly } from "svelte/transition";
     import { onMount } from "svelte";
     const { ipcRenderer } = window.require('electron');

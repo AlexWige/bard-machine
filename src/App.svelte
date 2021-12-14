@@ -1,19 +1,19 @@
 <script>
-    import globalStyles from "./style/globalStyles";
-    import collectionLoader from "./collectionLoader";
-    import { collectionPath } from "./collectionPaths";
-    import * as pointerManager from "./pointer/pointerManager";
-    import { onHomeScreen } from "./playerStore";
+    import globalStyles from "./style/global-styles";
+    import collectionLoader from "./collection-loader";
+    import { collectionPath } from "./collection-paths";
+    import * as pointerManager from "./pointer/pointer-manager";
+    import { onHomeScreen } from "./player-store";
     import { onDestroy, onMount } from "svelte";
     import * as hotkeys from "./hotkeys/hotkey-manager";
     import TopBar from "./TopBar.svelte";
     import SoundListView from "./SoundListView.svelte";
     import HomeScreen from "./HomeScreen.svelte";
-    import ContextMenu from "./ContextMenu.svelte";
+    import ContextMenu from "./context-menu/ContextMenu.svelte";
     import Modal from "./modal/Modal.svelte";
     import 'tippy.js/dist/tippy.css';
     import tippy from "tippy.js";
-    import soundStore from "./sound-blocks/soundStore";
+    import soundStore from "./sound-blocks/sound-store";
     const { ipcRenderer } = window.require('electron');
 
     $: style = `--bg: ${globalStyles.bg};`;
@@ -37,12 +37,12 @@
         // **** TEST BUTTON
         window.addEventListener('keydown', e => {
             if(e.key != "t") return;
-            console.log(soundStore.get());
+            // test
         });
 
         // **** ON DEV
-        // collectionLoader.openCollection('C:/Users/alexa/Desktop/tests.bmsounds');
-        // $onHomeScreen = false;
+        collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        $onHomeScreen = false;
     });
 
     onDestroy(async() => {

@@ -1,7 +1,7 @@
-import soundStore from './sound-blocks/soundStore';
+import soundStore from './sound-blocks/sound-store';
 const { ipcRenderer } = window.require('electron');
-import { onHomeScreen } from "./playerStore";
-import { collectionPath, recentlyOpened } from './collectionPaths';
+import { onHomeScreen } from "./player-store";
+import { collectionPath, recentlyOpened } from './collection-paths';
 import _ from 'lodash';
 const fs = require('fs');
 const path = require('path');

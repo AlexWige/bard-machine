@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
-import { SoundStoreItem, getNewID } from "./soundStoreItem";
-import { SoundData } from "./soundData";
+import { SoundStoreItem, getNewID } from "./sound-store-item";
+import { SoundData } from "./sound-data";
 import _ from "lodash";
 
 function createSoundStore() {

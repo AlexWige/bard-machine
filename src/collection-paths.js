@@ -1,4 +1,4 @@
-import gettableStore from "./utils/gettableStore";
+import gettableStore from "./utils/gettable-store";
 
 // Current collection path
 export const collectionPath = gettableStore('');

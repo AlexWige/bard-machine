@@ -1,9 +1,9 @@
 <script>
-    import globalStyles from "../style/globalStyles";
+    import globalStyles from "../style/global-styles";
     import ModalOption from "./ModalOption.svelte";
     import ModalInput from "./ModalInput.svelte";
     import { tick, onMount, onDestroy } from "svelte";
-    import { apis } from "../playerStore";
+    import { apis } from "../player-store";
 
     $: style = `--bgCache: ${globalStyles.bg.darken(0.5).fade(0.4)};`
             + `--boxBg: ${globalStyles.bg.lighten(0.6)};`

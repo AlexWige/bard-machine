@@ -1,5 +1,5 @@
 import _ from 'lodash';
-import { collectionPath } from '../collectionPaths';
+import { collectionPath } from '../collection-paths';
 const path = require('path');
 
 export class SoundData {

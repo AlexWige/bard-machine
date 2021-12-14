@@ -1,8 +1,8 @@
 <script>
     import Color from "color";
     import { onMount } from "svelte";
-    import collectionLoader from "../collectionLoader";
-    import globalStyles from '../style/globalStyles';
+    import collectionLoader from "../collection-loader";
+    import globalStyles from '../style/global-styles';
 
     export let volume;
     export let mainColor;
