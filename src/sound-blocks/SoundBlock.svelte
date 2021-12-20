@@ -10,7 +10,7 @@
     import Fader from './Fader.svelte';
     import * as reorderables from "../pointer/reorderables";
     import * as selection from "../pointer/selection";
-    import * as contextMenu from "../pointer/context-menu";
+    import * as contextMenu from "../context-menu/context-menu";
     import collectionLoader from "../collection-loader";
     import { getInputModal } from "../hotkeys/hotkey-manager";
     import tippy from 'tippy.js';
@@ -41,7 +41,8 @@
         getID: () => id,
         isPlaying: () => isPlaying,
         setPlaying: (play) => { isPlaying = play; },
-        stop: () => stopSound,
+        play: () => { isPlaying = true; },
+        stop: () => { stopSound() },
         getDOM: () => dom,
         onHotkey: () => { 
             if(soundData.category == 'effects') {
@@ -59,7 +60,8 @@
         refreshAudioPath: () => {
             if(!sound) sound = new Audio(soundData.path.absolute);
             else sound.src = soundData.path.absolute;
-        }
+        },
+        getSoundElement: () => sound
     }
 
     const selectableAPI = {
@@ -139,7 +141,6 @@
         if(!missing) { 
             options.push({ 
                 id: 'stop-sound-block',
-                solo: 'Stop',
                 multiple: 'Stop sounds',
                 onClickEach: () => stopSound()
             });
@@ -216,6 +217,8 @@
         if(!isPlaying) sound.currentTime = 0;
         else {
             isPlaying = false;
+            sound.currentTime = 0;
+            sound.pause();
             fader.onNextEnd(() => {
                 sound.currentTime = 0;
             });

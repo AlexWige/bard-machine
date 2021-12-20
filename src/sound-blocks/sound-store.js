@@ -50,6 +50,18 @@ function createSoundStore() {
             })
             return item;
         },
+        getItemFromNode: (node) => {
+            if(node && node.classList.contains('sound-block')) {
+                if(node.dataset.id) {
+                    let item;
+                    update(store => {
+                        item = store.find(s => s.id == node.dataset.id);
+                        return store;
+                    })
+                    return item;
+                }
+            }
+        },
         setSoundAPI: (id, api) => {
             update(store => {
                 const item = store.find(s => s.id == id);

@@ -22,7 +22,7 @@
             }
 */
 import _ from "lodash";
-import * as selectionManager from "./selection";
+import * as selectionManager from "../pointer/selection";
 import collectionLoader from "../collection-loader";
 
 // Context menu svelte element
@@ -52,8 +52,8 @@ export function setContextMenuAPI(api) {
 
 /************* UTILITY *************/
 
-export function show(x, y, options) {
-    return contextMenuAPI.show(x, y, options);
+export function show(x, y, options, apis) {
+    return contextMenuAPI.show(x, y, options, apis);
 }
 
 export function hide() {
@@ -161,7 +161,7 @@ export function onRightClick(e) {
         contextMenuAPI.hide();
         return false;
     } else {
-        contextMenuAPI.show(e.clientX, e.clientY, options);
+        contextMenuAPI.show(e.clientX, e.clientY, options, apis);
         return true;
     }
 }

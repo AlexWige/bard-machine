@@ -1,8 +1,33 @@
 <script>
     let bar = {};
     let activeBar = {};
+    let currentSound;
+
+    export function subscribeSound(soundAPI) {
+        unsubscribeSound();
+        if(!soundAPI) return;
+        currentSound = soundAPI.getSoundElement();
+        currentSound.addEventListener('timeupdate', onSoundUpdate);
+        updateBarFromSound(currentSound);
+    }
+
+    export function unsubscribeSound() {
+        currentSound?.removeEventListener('timeupdate', onSoundUpdate);
+    }
+
+    function onSoundUpdate(event) {
+        const sound = event.path[0];
+        if(sound) updateBarFromSound(sound);
+    }
+
+    function updateBarFromSound(sound) {
+        const progress = sound.currentTime / sound.duration;
+        moveBar(progress);
+    }
 
     function onPointerDown(e) {
+        if(!currentSound) return;
+
         if(e.pointerType == "mouse" && e.button != 0) return;
         onPointerMove(e);
         if(e.pointerType == "mouse") {
@@ -22,20 +47,20 @@
     }
 
     function onPointerMove(e) {
+        if(!currentSound) return;
         let x = e.touches ? e.touches[0].clientX : e.clientX;
         let rect = bar.getBoundingClientRect();
         let ratio = (x - rect.left) / (rect.right - rect.left);
         ratio = Math.min(Math.max(ratio, 0), 1);
         if(isNaN(ratio)) return;
         moveBar(ratio);
+        currentSound.currentTime = currentSound.duration * ratio;
     }
 
     function moveBar(progress) {
         progress = Math.round(progress * 1000) / 1000;
         if(activeBar) activeBar.style.width = progress * 100 + '%';
-        // on change
     }
-
 </script>
 
 <div class="progress-bar-container" on:pointerdown={onPointerDown}>

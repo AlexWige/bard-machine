@@ -1,15 +1,19 @@
 <script>
 	import globalStyles from '../style/global-styles';
-    import { onMount } from "svelte";
-    import * as contextMenuManager from '../pointer/context-menu';
+    import { onMount, tick } from "svelte";
+    import * as contextMenuManager from './context-menu';
     import { bigBlocks } from '../player-store';
     import SoundControls from "./ContextMenuSoundControls.svelte";
+    import soundStore from '../sound-blocks/sound-store';
 
 	export let x = 0;
 	export let y = 0;
     export let visible = false;
-    
+
+    let soundControls;    
     let options = [];
+    let apis = [];
+    let selectedSoundAPI;
 
     onMount(async() => {
         contextMenuManager.setContextMenuAPI(api);
@@ -20,11 +24,22 @@
         hide: hide
     };
     
-    function show(_x, _y, _options) {
+    function show(_x, _y, _options, _apis) {
         visible = true;
         x = _x;
         y = _y;
         options = _options;
+        apis = _apis;
+        const selectedSoundAPIs = _apis.map(api => {
+            const sound = soundStore.getItemFromNode(api.getNode());
+            if(sound) return sound.api;
+        }).filter(item => item);
+
+        if(selectedSoundAPIs.length == 1) {
+            selectedSoundAPI = selectedSoundAPIs[0];
+        } else selectedSoundAPI = null;
+
+        soundControls?.updateSound(selectedSoundAPI);
     }
 
     function hide() {
@@ -44,9 +59,11 @@
 {#if visible && options.length > 0}
     <div style="top: {y}px; left: {x}px; {style}" id="context-menu">
         <ul>
-            <!-- <li id="context-sound-controls">
-                <SoundControls/>
-            </li> -->
+            {#if selectedSoundAPI}
+                <li id="context-sound-controls">
+                    <SoundControls bind:this={soundControls} soundAPI={selectedSoundAPI}/>
+                </li>
+            {/if}
             {#each options as option, i}
                 <li on:click={() => { onClickOption(option) }}>{@html option.name}</li>
             {/each}
