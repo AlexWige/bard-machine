@@ -37,12 +37,15 @@
         // **** TEST BUTTON
         window.addEventListener('keydown', e => {
             if(e.key != "t") return;
-            // test
+            soundStore.update(store => {
+                console.log(store);
+                return store;
+            });
         });
 
         // **** ON DEV
-        collectionLoader.openCollection('C:\\Users\\alexa\\Desktop\\tests.bmsounds');
-        $onHomeScreen = false;
+        // collectionLoader.openCollection('C:\\Users\\alexa\\Desktop\\tests.bmsounds');
+        // $onHomeScreen = false;
     });
 
     onDestroy(async() => {

@@ -63,19 +63,21 @@ function saveCollection() {
 function refreshSoundPaths() {
     soundStore.update(store => {
         store.forEach(sound => {
-            sound.data.missingFile = false;
-            const collectionDirname = path.dirname(collectionPath.get());
-            const reconstructedPath = path.join(collectionDirname, sound.data.path.relative);
-            const absoluteExists = fs.existsSync(sound.data.path.absolute);
-            const relativeExists = fs.existsSync(reconstructedPath);
+            sound.data.sources.forEach(source => {
+                source.isMissing = false;
+                const collectionDirname = path.dirname(collectionPath.get());
+                const reconstructedPath = path.join(collectionDirname, source.relativePath);
+                const absoluteExists = fs.existsSync(source.absolutePath);
+                const relativeExists = fs.existsSync(reconstructedPath);
 
-            if(!absoluteExists && relativeExists) {
-                sound.data.path.absolute = reconstructedPath;
-            } else if(absoluteExists && !relativeExists) {
-                sound.data.path.relative = path.relative(collectionDirname, sound.data.path.absolute);
-            } else if(!absoluteExists && !relativeExists)  {
-                sound.data.missingFile = true;
-            }
+                if(!absoluteExists && relativeExists) {
+                    source.absolutePath = reconstructedPath;
+                } else if(absoluteExists && !relativeExists) {
+                    source.relativePath = path.relative(collectionDirname, source.absolutePath);
+                } else if(!absoluteExists && !relativeExists)  {
+                    source.isMissing = true;
+                }
+            });
         });
         return store;
     });

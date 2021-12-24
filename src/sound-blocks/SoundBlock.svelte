@@ -4,7 +4,7 @@
     import globalStyles from '../style/global-styles';
     import Color from 'color';
     import soundStore from './sound-store';
-    import { globalVolume, bigBlocks, apis } from '../player-store';
+    import { globalVolume, bigBlocks } from '../player-store';
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
     import Fader from './Fader.svelte';
@@ -13,13 +13,17 @@
     import * as contextMenu from "../context-menu/context-menu";
     import collectionLoader from "../collection-loader";
     import { getInputModal } from "../hotkeys/hotkey-manager";
+    import { getContextMenuOptions } from "./sound-block-context-menu";
     import tippy from 'tippy.js';
-    const { ipcRenderer } = window.require('electron');
     
     export let id;
     export let soundData;
+    let currentSourceIndex = 0;
     let isPlaying = false;
     let isSelected = false;
+    let sound = new Audio(soundData.sources[0].absolutePath);
+    let fader;
+    let faderValue = 0;
 
     const dom = {
         soundBlock: undefined,
@@ -29,16 +33,13 @@
         assignButton: undefined
     }
 
-    let fader;
-    let faderValue = 0;
-    let sound = new Audio(soundData.path.absolute);
-
     $: hotkeyName = soundData.hotkeyName ?? '';
     $: keyFontSize = getAssignKeySize(hotkeyName ? hotkeyName.length : 0, $bigBlocks); 
-    $: missing = soundData.missingFile;
+    $: missing = soundData.sources.find(s => s.isMissing);
 
     const api = {
         getID: () => id,
+        getData: () => soundData,
         isPlaying: () => isPlaying,
         setPlaying: (play) => { isPlaying = play; },
         play: () => { isPlaying = true; },
@@ -58,8 +59,8 @@
             soundData.volume = _.clamp(soundData.volume, 0, 1);
         },
         refreshAudioPath: () => {
-            if(!sound) sound = new Audio(soundData.path.absolute);
-            else sound.src = soundData.path.absolute;
+            if(!sound) sound = new Audio(soundData.sources[currentSourceIndex].absolutePath);
+            else sound.src = soundData.sources[currentSourceIndex].absolutePath;
         },
         getSoundElement: () => sound
     }
@@ -93,7 +94,7 @@
 
     const contextMenuAPI = {
         getNode: () => dom.soundBlock,
-        getOptions: () => getContextMenuOptions()
+        getOptions: (nodes) => getContextMenuOptions(nodes, api)
     }
     
     onMount(async () => {
@@ -101,11 +102,8 @@
         selection.register(selectableAPI);
         contextMenu.register(contextMenuAPI);
         soundStore.setSoundAPI(id, api);
-        sound.src = soundData.path.absolute;
-        sound.onended = () => {
-            if(soundData.category != 'effects') sound.play();
-            else isPlaying = false;
-        };
+        sound.src = soundData.sources[0].absolutePath;
+        sound.onended = () => onSoundEnd();
         
         tippy(dom.assignButton, { content:  'Assign hotkey' });
         tippy(dom.volumeSlider, { content: 'Sound volume' });
@@ -120,71 +118,17 @@
         fader.pause();
     });
     
-    $: mainColor = getMainColor(soundData.category);
-    
-    $: style = `--mainColor: ${mainColor.hex()};`
-    + `--mainColorLighter: ${mainColor.lighten(0.1)};`
-    + `--mainBoxBG: ${isPlaying ? mainColor.hex() : globalStyles.bg.lighten(0.5).hex()};`
-    + `--mainBoxBGHover: ${isPlaying ? mainColor.hex() : globalStyles.bg.lighten(0.65).hex()};`
-    + `--mainBoxBGSelected: ${isPlaying ? mainColor.lighten(0.05).hex() : globalStyles.bg.lighten(1.2).hex()};`
-    + `--mainBoxBGSelectedHover: ${isPlaying ? mainColor.lighten(0.07).hex() : globalStyles.bg.lighten(1.4).hex()};`
-    + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : globalStyles.bg.lighten(1).hex()};`
-    + `--fontWeight: ${isPlaying ? '600' : '400'};`;
-
     $: onVolumeChange(soundData.volume, $globalVolume, faderValue);
-
     $: onPlayingStateChange(isPlaying);
-
-    function getContextMenuOptions() {
-        let options = [];
-
-        if(!missing) { 
-            options.push({ 
-                id: 'stop-sound-block',
-                multiple: 'Stop sounds',
-                onClickEach: () => stopSound()
-            });
-            options.push({ 
-                id: 'rename-sound-block',
-                solo: 'Rename...',
-                onClickEach: () => {
-                    apis.modal.show(
-                        "Rename sound", 
-                        [
-                            { name: "Cancel", hotkey: 'Escape', onClick: () => apis.modal.hide() },
-                            { name: "OK", hotkey: 'Enter', onClick: () => {
-                                let newName = apis.modal.getInputValue();
-                                soundStore.renameSound(id, newName);
-                                apis.modal.hide();
-                                collectionLoader.saveCollection();
-                            }}
-                        ],
-                        { value: soundData.title, placeHolder: 'Enter sound name...' }
-                    );
-                }
-            });
-        } else {
-            options.push({ 
-                id: 'replace-sound-block',
-                solo: 'Replace file...',
-                onClickEach: () => {
-                    ipcRenderer.send('replace-sound-file', id);
-                }
-            });
-        }
-
-        options.push({ 
-            id: 'remove-sound-block',
-            solo: 'Remove',
-            multiple: 'Remove sounds',
-            onClickEach: () => {
-                soundStore.removeSound(id);
-            },
-            saveAfter: true
-        });
-
-        return options;
-    }
+    $: mainColor = getMainColor(soundData.category);
+    $: style = `--mainColor: ${mainColor.hex()};`
+        + `--mainColorLighter: ${mainColor.lighten(0.1)};`
+        + `--mainBoxBG: ${isPlaying ? mainColor.hex() : globalStyles.bg.lighten(0.5).hex()};`
+        + `--mainBoxBGHover: ${isPlaying ? mainColor.hex() : globalStyles.bg.lighten(0.65).hex()};`
+        + `--mainBoxBGSelected: ${isPlaying ? mainColor.lighten(0.05).hex() : globalStyles.bg.lighten(1.2).hex()};`
+        + `--mainBoxBGSelectedHover: ${isPlaying ? mainColor.lighten(0.07).hex() : globalStyles.bg.lighten(1.4).hex()};`
+        + `--assignButtonBorder: ${isPlaying ? mainColor.lighten(0.3) : globalStyles.bg.lighten(1).hex()};`
+        + `--fontWeight: ${isPlaying ? '600' : '400'};`;
 
     function getMainColor(blockType) {
         switch (blockType) {
@@ -206,6 +150,21 @@
             else if(keyNameLength == 2) return '15.5px';
             else if(keyNameLength == 3) return '13.5px';
             else return '10px';
+        }
+    }
+
+    function onSoundEnd() {
+        if(soundData.category == 'effects') {
+            isPlaying = false;
+        } else {
+            // If playlist, go to next source
+            if(soundData.sources.length > 1) {
+                currentSourceIndex++;
+                if(currentSourceIndex >= soundData.sources.length) 
+                    currentSourceIndex = 0;
+                sound.src = soundData.sources[currentSourceIndex].absolutePath;
+            }
+            sound.play();
         }
     }
 

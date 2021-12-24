@@ -3,24 +3,23 @@ import { collectionPath } from '../collection-paths';
 const path = require('path');
 
 export class SoundData {
-    constructor(absolutePath, category) {
-        // this.sources = [
-        //     { 
-        //         title: '',
-        //         absolutePath: '',
-        //         relativePath: ''
-        //     }
-        // ]
-        this.path = {
-            absolute: absolutePath,
-            relative: path.relative(path.dirname(collectionPath.get()), absolutePath)
-        };
+    constructor(category, sources) {
+        this.sources = sources;
+        this.title = sources.length == 1 ? sources[0].title : "New Playlist";
         this.category = category;
         this.volume = category == 'music' ? 0.6 : 0.8;
-        this.title = this.processTitle(absolutePath);
         this.hotkeyCode = -1;
         this.hotkeyName = '';
-        this.missingFile = false;
+    }
+}
+
+export class SoundDataSource
+{
+    constructor(absolutePath) {
+        this.absolutePath = absolutePath;
+        this.relativePath = this.getRelativePath(absolutePath);
+        this.title = this.processTitle(absolutePath);
+        this.isMissing = false;
     }
 
     processTitle(_path) {
@@ -30,5 +29,9 @@ export class SoundData {
         title = title.replace(/_/g, ' ');
         title = _.startCase(title);
         return title;
+    }
+
+    getRelativePath(_absolutePath) {
+        return path.relative(path.dirname(collectionPath.get()), _absolutePath);
     }
 }

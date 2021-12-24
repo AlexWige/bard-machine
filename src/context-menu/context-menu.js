@@ -2,7 +2,8 @@
 /*  ---
     Object with context menu must register an api with the following keys:
         getNode: () => Return main dom element
-        getOptions () => [] Gets array of context menu options for this element
+        getOptions (nodes) => [] Gets array of context menu options for this element
+            Selecte Nodes are passed as argument so that certain options can be filtered based on current selection
             *OPTIONS are defined like so:
             {   
                 Unique id of option
@@ -90,7 +91,8 @@ function getOptionsFor(apis) {
     let displayedOptions = [];
 
     apis.forEach(api => {
-        const options = api.getOptions();
+        const selectedNodes = apis.map(item => item.getNode());
+        const options = api.getOptions(selectedNodes);
         options.forEach(option => {
             // Find option with the same id already included in array
             const similarIncluded = displayedOptions.find(o => o.id == option.id);

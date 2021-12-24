@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
 import { SoundStoreItem, getNewID } from "./sound-store-item";
-import { SoundData } from "./sound-data";
+import { SoundData, SoundDataSource } from "./sound-data";
 import _ from "lodash";
 
 function createSoundStore() {
@@ -22,7 +22,7 @@ function createSoundStore() {
             update(store => {
                 paths.forEach(path => {
                     const id = getNewID(store);
-                    const data = new SoundData(path, category);
+                    const data = new SoundData(category, [new SoundDataSource(path)]);
                     store.push(new SoundStoreItem(id, data));
                 });
                 return store;
