@@ -14,6 +14,7 @@
     import 'tippy.js/dist/tippy.css';
     import tippy from "tippy.js";
     import soundStore from "./sound-blocks/sound-store";
+    import PlaylistEditorWindow from "./playlists/PlaylistEditorWindow.svelte";
     const { ipcRenderer } = window.require('electron');
 
     $: style = `--bg: ${globalStyles.bg};`;
@@ -34,17 +35,17 @@
 
         tippy.setDefaultProps({ delay: [1000, 0], touch: false });
 
-        // **** TEST BUTTON
-        window.addEventListener('keydown', e => {
-            if(e.key != "t") return;
-            soundStore.update(store => {
-                console.log(store);
-                return store;
-            });
-        });
+        // // **** TEST BUTTON
+        // window.addEventListener('keydown', e => {
+        //     if(e.key != "t") return;
+        //     soundStore.update(store => {
+        //         console.log(store);
+        //         return store;
+        //     });
+        // });
 
-        // **** ON DEV
-        // collectionLoader.openCollection('C:\\Users\\alexa\\Desktop\\tests.bmsounds');
+        // // **** ON DEV
+        // collectionLoader.openCollection('C:/Alex/RPG/_Export/tests.bmsounds');
         // $onHomeScreen = false;
     });
 
@@ -63,6 +64,7 @@
     {:else}
         <SoundListView/>
         <ContextMenu/>
+        <PlaylistEditorWindow/>
     {/if}
     <Modal/>
 </main>

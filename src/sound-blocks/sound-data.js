@@ -13,6 +13,12 @@ export class SoundData {
     }
 }
 
+export function getNewSourceID(soundData) {
+    const ids = soundData.sources.map(s => s.id);
+    if(ids.length == 0) return 0;
+    return Math.max(...ids) + 1;
+}
+
 export class SoundDataSource
 {
     constructor(absolutePath) {
@@ -20,6 +26,7 @@ export class SoundDataSource
         this.relativePath = this.getRelativePath(absolutePath);
         this.title = this.processTitle(absolutePath);
         this.isMissing = false;
+        this.id = 0;
     }
 
     processTitle(_path) {

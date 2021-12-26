@@ -1,7 +1,9 @@
 //* Handles reorderable element
 /*  ---
     Only nodes in the same parent can be reodered
-    - Reoderable nodes must be marked as draggable ('data-draggable' attribute to true)
+    - Reorderable nodes must be marked as draggable ('data-draggable' attribute to true)
+    - Reorderable nodes must be selectables
+    - Position must be set to 'relative'
     - Reorderable elements must register an 'api' object with the following methods:
         getNode: () => {}, // Returns main dom element
         putBefore: node => {}, // Move this element before other node
@@ -133,18 +135,6 @@ export function onDragEnd(dragEvent) {
 
 /********************* UTILITY *********************/
 
-function putSelectionAfter(targetAPI) {
-    let selectedNodes = selectionManager.selected.map(api => api.getNode());
-    selectedNodes = getNodesInDomOrder(selectedNodes);
-
-    for (let i = selectedNodes.length - 1; i >= 0; i--) {
-        const api = findAPIFromNode(selectedNodes[i]);
-        if(api) api.putAfter(targetAPI.getNode());
-    }
-
-    selectionManager.selectNodes(selectedNodes);
-}
-
 function putSelectionBefore(targetAPI) {
     let selectedNodes = selectionManager.selected.map(api => api.getNode());
     selectedNodes = getNodesInDomOrder(selectedNodes);
@@ -152,6 +142,18 @@ function putSelectionBefore(targetAPI) {
     for (let i = 0; i < selectedNodes.length; i++) {
         const api = findAPIFromNode(selectedNodes[i]);
         if(api) api.putBefore(targetAPI.getNode());
+    }
+
+    selectionManager.selectNodes(selectedNodes);
+}
+
+function putSelectionAfter(targetAPI) {
+    let selectedNodes = selectionManager.selected.map(api => api.getNode());
+    selectedNodes = getNodesInDomOrder(selectedNodes);
+
+    for (let i = selectedNodes.length - 1; i >= 0; i--) {
+        const api = findAPIFromNode(selectedNodes[i]);
+        if(api) api.putAfter(targetAPI.getNode());
     }
 
     selectionManager.selectNodes(selectedNodes);

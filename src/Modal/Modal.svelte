@@ -3,7 +3,7 @@
     import ModalOption from "./ModalOption.svelte";
     import ModalInput from "./ModalInput.svelte";
     import { tick, onMount, onDestroy } from "svelte";
-    import { apis } from "../player-store";
+    import * as modalManager from "./modal-manager";
 
     $: style = `--bgCache: ${globalStyles.bg.darken(0.5).fade(0.4)};`
             + `--boxBg: ${globalStyles.bg.lighten(0.6)};`
@@ -33,7 +33,7 @@
     };
 
     onMount(async () => {
-        apis.modal = api;
+        modalManager.registerModalAPI(api);
     });
 
     export function hide() {
@@ -56,7 +56,7 @@
     }
 </script>
 
-<div id="modal"style={style}>
+<div id="modal" style={style}>
     <div class="modal-content">
         <div class="main-text">
             {text}
@@ -85,10 +85,11 @@
         left: 0;
         width: 100%;
         height: 100%;
+        z-index: 1200;
 
         .modal-content {
             position: fixed;
-            z-index: 1200;
+            z-index: 1201;
             left: 50%;
             top: 42%;
             transform: translate(-50%, -50%);

@@ -2,7 +2,7 @@ import soundStore from "../sound-blocks/sound-store";
 import collectionLoader from "../collection-loader";
 import gettableStore from "../utils/gettable-store";
 import * as selectionManager from "../pointer/selection";
-import { apis } from "../player-store";
+import { modal } from "../modal/modal-manager";
 const { ipcRenderer } = window.require('electron');
 
 export const inputModalActive = gettableStore(false);
@@ -19,8 +19,9 @@ export function onAppDestroy() {
 }
 
 function onKeyDown(e) {
+    if(document.activeElement.type == 'text') return;
     if(e.ctrlKey && e.shiftKey) return;
-    if(apis.modal.isVisible()) return;
+    if(modal.isVisible()) return;
     
     // Ctrl+N → New collection...
     if(e.ctrlKey && e.keyCode == 78) {

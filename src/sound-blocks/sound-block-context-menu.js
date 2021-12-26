@@ -1,9 +1,9 @@
-import { apis } from '../player-store';
+import { modal } from "../modal/modal-manager";
 import collectionLoader from "../collection-loader";
 import soundStore from './sound-store';
 const { ipcRenderer } = window.require('electron');
 import { groupIntoPlaylist, ungroupPlaylist } from "../playlists/playlists";
-import * as selectionManager from "../pointer/selection";
+import * as playlistManager from "../playlists/playlists";
 
 export function getContextMenuOptions(nodes, soundAPI) {
     let options = [];
@@ -18,16 +18,36 @@ export function getContextMenuOptions(nodes, soundAPI) {
     if(selectedSoloMusic.length == nodes.length) {
         options.push({
             id: 'group-into-playlist',
-            multiple: 'Group into playlist',
+            multiple: 'Group into playlist...',
             onClickAll: () => {
-                const newSoundItem = groupIntoPlaylist(selectedSoloMusic);
-                openRenameModal(newSoundItem.id, "Playlist Name");
+                modal.show(
+                    "New Playlist Name",
+                    [
+                        { name: "Cancel", hotkey: 'Escape', onClick: () => modal.hide() },
+                        { name: "OK", hotkey: 'Enter', onClick: () => {
+                            let newName = modal.getInputValue();
+                            const newSoundItem = groupIntoPlaylist(selectedSoloMusic);
+                            newSoundItem.data.title = newName;
+                            collectionLoader.saveCollection();
+                            modal.hide();
+                        }}
+                    ],
+                    { value: "New Playlist", placeHolder: 'Enter playlist name...' }
+                );
             },
             saveAfter: true
         });
     }
 
     if(selectedPlaylists.length == nodes.length) {
+        options.push({
+            id: 'manage-playlist',
+            solo: 'Manage playlist...',
+            onClickEach: () => {
+                playlistManager.editorWindowAPI.show(soundID);
+            }
+        });
+
         options.push({
             id: 'ungroup-playlists',
             solo: 'Ungroup playlist',
@@ -50,7 +70,22 @@ export function getContextMenuOptions(nodes, soundAPI) {
         options.push({ 
             id: 'rename-sound-block',
             solo: 'Rename...',
-            onClickEach: () => openRenameModal(soundID)
+            onClickEach: () => {
+                const currentTitle = soundStore.getItemByID(soundID).data.title;
+                modal.show(
+                    "Rename Sound",
+                    [
+                        { name: "Cancel", hotkey: 'Escape', onClick: () => modal.hide() },
+                        { name: "OK", hotkey: 'Enter', onClick: () => {
+                            let newName = modal.getInputValue();
+                            soundStore.renameSound(soundID, newName);
+                            modal.hide();
+                            collectionLoader.saveCollection();
+                        }}
+                    ],
+                    { value: currentTitle, placeHolder: 'Enter sound name...' }
+                );
+            }
         });
     } else {
         options.push({ 
@@ -69,21 +104,4 @@ export function getContextMenuOptions(nodes, soundAPI) {
     });
 
     return options;
-}
-
-function openRenameModal(soundID, modalTitle = "Rename Sound") {
-    const currentTitle = soundStore.getItemByID(soundID).data.title;
-    apis.modal.show(
-        modalTitle, 
-        [
-            { name: "Cancel", hotkey: 'Escape', onClick: () => apis.modal.hide() },
-            { name: "OK", hotkey: 'Enter', onClick: () => {
-                let newName = apis.modal.getInputValue();
-                soundStore.renameSound(soundID, newName);
-                apis.modal.hide();
-                collectionLoader.saveCollection();
-            }}
-        ],
-        { value: currentTitle, placeHolder: 'Enter sound name...' }
-    );
 }

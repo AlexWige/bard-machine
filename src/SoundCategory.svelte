@@ -3,8 +3,14 @@
     import soundStore from './sound-blocks/sound-store';
     import _ from 'lodash';
     import AddSoundButton from './AddSoundButton.svelte';
+    import collectionLoader from "./collection-loader";
 
     export let category;
+
+    function onSoundPathAdded(paths) {
+        collectionLoader.addSounds(paths, category);
+        collectionLoader.saveCollection();
+    }
 </script>
 
 <div class="category {category}">
@@ -16,7 +22,7 @@
         {#if $soundStore.filter(s => s.data.category == category).length == 0}
             <div class="empty-sound">No sound found in this category.</div>
         {/if}
-        <AddSoundButton category={category}/>
+        <AddSoundButton onSoundPathAdded={onSoundPathAdded}/>
     </div>
 </div>
 

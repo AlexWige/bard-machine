@@ -2,6 +2,13 @@ import soundStore from "../sound-blocks/sound-store";
 import { SoundData } from '../sound-blocks/sound-data';
 import { getNewID, SoundStoreItem } from "../sound-blocks/sound-store-item";
 import collectionLoader from "../collection-loader";
+import _ from "lodash";
+
+export let editorWindowAPI;
+
+export function registerEditorWindow(_api) {
+    editorWindowAPI = _api;
+}
 
 // Pass SoundStoreItems with 'music' category as argument
 export function groupIntoPlaylist(selectedMusics) {
@@ -10,6 +17,9 @@ export function groupIntoPlaylist(selectedMusics) {
         const sources = selectedMusics
             .sort((a, b) => store.indexOf(a) - store.indexOf(b))
             .map(item => item.data.sources[0]);
+        for (let i = 0; i < sources.length; i++) {
+            sources[i].id = i;
+        }
         const playlistData = new SoundData('music', sources);
         playlistItem = new SoundStoreItem(getNewID(store), playlistData);
         // Get index of first selected music
@@ -20,7 +30,6 @@ export function groupIntoPlaylist(selectedMusics) {
         store = store.filter(sound => !selectedMusics.includes(sound));
         return store;
     });
-    collectionLoader.saveCollection();
     return playlistItem;
 }
 

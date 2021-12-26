@@ -1,11 +1,10 @@
 <script>
     const { ipcRenderer } = window.require('electron');
-    import collectionLoader from "./collection-loader";
     import globalStyles from './style/global-styles';
     import tippy from "tippy.js";
     import { onMount } from "svelte";
 
-    export let category = 'music';
+    export let onSoundPathAdded;
 
     let rootNode;
 
@@ -20,8 +19,7 @@
 
     function onSoundPathResponse(e, paths) {
         ipcRenderer.removeListener('import-new-sounds', onSoundPathResponse);
-        collectionLoader.addSounds(paths, category);
-        collectionLoader.saveCollection();
+        onSoundPathAdded(paths);
     }
 
     $: style = `--bg: ${globalStyles.bg.darken(0.1)};`
