@@ -3,27 +3,32 @@
     import BottomBar from "./BottomBar.svelte";
     import InputModal from "./hotkeys/InputModal.svelte";
     import SoundCategory from "./SoundCategory.svelte";
+    import RoomSidebar from "./rooms/RoomSidebar.svelte";
 
     $: style = `--bg: ${globalStyles.bg};`
             + `--topBarHeight: ${globalStyles.topBarSize};`
             + `--musicColor: ${globalStyles.music};`
             + `--ambientColor: ${globalStyles.ambient};`
-            + `--effectsColor: ${globalStyles.effects};`;
+            + `--effectsColor: ${globalStyles.effects};`
+            + `--bottomBarHeight: 60px;`;
 </script>
 
 <div id="sound-list-view" style="{style}">
-    <div id="app" class="custom-scroll">
-        <div class="container">
-            <div class="first-col">
-                <SoundCategory category="music"/>
-                <SoundCategory category="ambient"/>
+    <div class="center-container">
+        <!-- <RoomSidebar/> -->
+        <div id="sound-list" class="custom-scroll">
+            <div class="container">
+                <div class="first-col">
+                    <SoundCategory category="music"/>
+                    <SoundCategory category="ambient"/>
+                </div>
+                <div class="second-col">
+                    <SoundCategory category="effects"/>
+                </div>
             </div>
-            <div class="second-col">
-                <SoundCategory category="effects"/>
-            </div>
+            <InputModal/>
         </div>
     </div>
-    <InputModal/>
     <BottomBar/>
 </div>
 
@@ -39,13 +44,19 @@
         width: 100%;
         overflow: hidden;
 
-        #app {
+        .center-container {
+            display: flex;
+            flex-direction: row;
             position: absolute;
             top: 0;
-            left: 0;
-            right: 0;
+            width: 100%;
+            bottom: var(--bottomBarHeight);
+        }
+
+        #sound-list {
+            height: 100%;
+            flex: 1;
             padding: 0 5px;
-            bottom: 60px;
             box-sizing: border-box;
             overflow-y: auto;
             overflow-x: hidden;

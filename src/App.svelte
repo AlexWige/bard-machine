@@ -16,7 +16,6 @@
     import soundStore from "./sound-blocks/sound-store";
     import PlaylistEditorWindow from "./playlists/PlaylistEditorWindow.svelte";
     const { ipcRenderer } = window.require('electron');
-
     $: style = `--bg: ${globalStyles.bg};`;
     
     let saveInterval;
@@ -35,18 +34,18 @@
 
         tippy.setDefaultProps({ delay: [1000, 0], touch: false });
 
-        // // **** TEST BUTTON
-        // window.addEventListener('keydown', e => {
-        //     if(e.key != "t") return;
-        //     soundStore.update(store => {
-        //         console.log(store);
-        //         return store;
-        //     });
-        // });
+        // **** TEST BUTTON
+        window.addEventListener('keydown', e => {
+            if(e.key != "t") return;
+            soundStore.update(store => {
+                console.log(store);
+                return store;
+            });
+        });
 
-        // // **** ON DEV
-        // collectionLoader.openCollection('C:/Alex/RPG/_Export/tests.bmsounds');
-        // $onHomeScreen = false;
+        // **** ON DEV
+        //collectionLoader.openCollection('C:/Alex/RPG/_Export/tests.bmsounds');
+        //$onHomeScreen = false;
     });
 
     onDestroy(async() => {

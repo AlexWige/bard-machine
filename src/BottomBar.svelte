@@ -71,7 +71,7 @@
         left: 0;
         right: 0;
         width: 100%;
-        height: 60px;
+        height: var(--bottomBarHeight);
         background-color: var(--barColor, #ccc);
         user-select: none;
     }
