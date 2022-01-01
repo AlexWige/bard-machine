@@ -32,7 +32,7 @@ function onAppReady() {
     window = new BrowserWindow({ 
         width: 1200, 
         height: 700,
-        minWidth: 400,
+        minWidth: 480,
         minHeight: 200,
         frame: false,
         webPreferences: {

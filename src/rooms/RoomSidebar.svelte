@@ -30,14 +30,8 @@
         <RoomButton {...$mainRoom}/>
         <hr/>
         <div class="rooms-list">
-            {#each $roomsStore as room (room.id)}
-                <RoomButton 
-                    bind:id={room.id} 
-                    bind:name={room.name} 
-                    bind:isActive={room.isActive} 
-                    bind:playingMusic={room.playingMusic} 
-                    bind:playingAmbient={room.playingAmbient}
-                />
+            {#each $roomsStore as room, i (room.id)}
+                <RoomButton {...room}/>
             {/each}
         </div>
         <AddRoomButton/>

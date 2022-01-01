@@ -21,6 +21,7 @@
                     let name = modal.getInputValue();
                     createRoom(name);
                     modal.hide();
+                    collectionLoader.saveCollection();
                 }}
             ],
             { value: "New Room", placeHolder: 'Enter Room Name...' }

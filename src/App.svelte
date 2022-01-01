@@ -16,6 +16,7 @@
     import tippy from "tippy.js";
     import soundStore from "./sound-blocks/sound-store";
     import PlaylistEditorWindow from "./playlists/PlaylistEditorWindow.svelte";
+    import roomsStore from "./rooms/rooms-store";
     const { ipcRenderer } = window.require('electron');
     $: style = `--bg: ${globalStyles.bg};`;
     
@@ -38,11 +39,7 @@
 
         // **** TEST BUTTON
         window.addEventListener('keydown', e => {
-            if(e.key != "t") return;
-            soundStore.update(store => {
-                console.log(store);
-                return store;
-            });
+            if(!(e.key == "t" && e.ctrlKey)) return;
         });
 
         // **** ON DEV

@@ -6,6 +6,7 @@ import { collectionPath, recentlyOpened } from './collection-paths';
 import { SoundStoreItem } from "./sound-blocks/sound-store-item";
 import { version } from './player-store';
 import _ from 'lodash';
+import { mainRoom } from './rooms/rooms-manager';
 const fs = require('fs');
 const path = require('path');
 
@@ -61,10 +62,16 @@ function openCollection(path) {
                     return store; 
                 })
             }
+            
+            if(data.mainRoom) {
+                mainRoom.update(r => {
+                    return data.mainRoom;
+                });
+            }
+
             if(data.rooms) {
                 roomsStore.update(store => {
-                    store = data.rooms;
-                    return store; 
+                    return data.rooms; 
                 });
             }
 
@@ -84,6 +91,7 @@ function saveCollection() {
     const jsonData = JSON.stringify({
         version: version,
         sounds: soundStore.getAllData(),
+        mainRoom: mainRoom.get(),
         rooms: roomsStore.get() ?? []
     });
     const path = collectionPath.get();

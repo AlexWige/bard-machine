@@ -2,7 +2,7 @@
     import globalStyles from "../style/global-styles";
     import AssignKeyButton from "../hotkeys/AssignKeyButton.svelte";
     import ActiveSoundCount from "./ActiveSoundCount.svelte";
-    import { onMount, onDestroy } from "svelte";
+    import { onMount, onDestroy, afterUpdate, tick } from "svelte";
     import * as reorderables from "../pointer/reorderables";
     import * as selectionManager from "../pointer/selection";
     import * as contextMenuManager from "../context-menu/context-menu";
@@ -10,6 +10,7 @@
     import roomsStore from "./rooms-store";
     import { modal } from "../modal/modal-manager";
     import tippy from "tippy.js"
+    import collectionLoader from "../collection-loader";
 
     export let id = 0;
     export let name = '';
@@ -21,6 +22,7 @@
     export let hotkeyCode = -1;
 
     let mainNode;
+    let tippyBox;
     let tippyBoxTemplate;
     let isSelected = false;
 
@@ -43,12 +45,16 @@
                 const target = rooms.getRoomByID(rooms.getRoomIDFromNode(node));
                 return reorderables.moveArrayItemBefore(store, rooms.getRoomByID(id), target);
             });
+            const event = new Event('room-reordered');
+            window.dispatchEvent(event);
         },
         putAfter: node => {
             roomsStore.update(store => {
                 const target = rooms.getRoomByID(rooms.getRoomIDFromNode(node));
                 return reorderables.moveArrayItemAfter(store, rooms.getRoomByID(id), target);
             });
+            const event = new Event('room-reordered');
+            window.dispatchEvent(event);
         }
     }
 
@@ -72,13 +78,8 @@
         selectionManager.register(selectableAPI);
         contextMenuManager.register(contextMenuAPI);
         rooms.registerRoomAPI(api);
-        mainNode.addEventListener('context-menu-opened', onContextMenuOpened, true);
-        if(!isMain) tippy(mainNode, { 
-            content: tippyBoxTemplate, 
-            theme: 'sidebar', 
-            onShow: () => activeSoundTitleList = rooms.getRoomActiveSoundTitleList(id)
-        });
-        else tippy(mainNode, { content: 'Go back to main state', theme: 'sidebar' });
+        setupTippy();
+        window.addEventListener('room-reordered', onRoomReordered);
     });
     
     onDestroy(async() => {
@@ -87,10 +88,27 @@
         contextMenuManager.unregister(contextMenuAPI);
         rooms.unregisterRoomAPI(api);
         mainNode.removeEventListener('context-menu-opened', onContextMenuOpened, true);
+        window.removeEventListener('room-reordered', onRoomReordered);
     });
+
+    // Ugly fix for tippy bug
+    function onRoomReordered(e) {
+        setupTippy();
+    }
 
     export function getHotkeyCode() {
         return hotkeyCode;
+    }
+
+    async function setupTippy() {
+        if(tippyBox) tippyBox.destroy();
+        await tick();
+        activeSoundTitleList = rooms.getRoomActiveSoundTitleList(id);
+        if(!isMain) tippyBox = tippy(mainNode, { 
+            content: tippyBoxTemplate, 
+            theme: 'sidebar'
+        });
+        else tippyBox = tippy(mainNode, { content: 'Go back to main state', theme: 'sidebar' });
     }
 
     function onButtonClick(e) {
@@ -99,6 +117,25 @@
 
     function onContextMenuOpened(e) {
         selectionManager.selectNodes([mainNode]);
+    }
+
+    function onKeyAssign(keyCode, keyName) {
+        if(isMain) {
+            rooms.mainRoom.update(r => {
+                r.hotkeyCode = keyCode;
+                r.hotkeyName = keyName;
+                return r;
+            });
+        } else {
+            roomsStore.update(store => {
+                const room = store.find(r => r.id == id);
+                room.hotkeyCode = keyCode;
+                room.hotkeyName = keyName;
+                return store;
+            });
+        }
+        
+        collectionLoader.saveCollection();
     }
 
     function getContextMenuOptions(nodes) {
@@ -153,7 +190,7 @@
         <ActiveSoundCount category="ambient" count={playingAmbient}/>
         {/if}
         <div class="assign-btn-container">
-            <AssignKeyButton small={true} bind:hotkeyName={hotkeyName}/>
+            <AssignKeyButton small={true} bind:hotkeyName={hotkeyName} onKeyAssign={onKeyAssign}/>
         </div>
     </div>
 

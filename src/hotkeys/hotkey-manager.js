@@ -3,6 +3,7 @@ import collectionLoader from "../collection-loader";
 import gettableStore from "../utils/gettable-store";
 import * as selectionManager from "../pointer/selection";
 import { modal } from "../modal/modal-manager";
+import { getRoomWithHotkey, setRoomActive } from "../rooms/rooms-manager";
 const { ipcRenderer } = window.require('electron');
 
 // Add a function to this to catch key event, if it returns false, the event will stop
@@ -88,6 +89,11 @@ function onKeyDown(e) {
     if(!e.ctrlKey && !e.shiftKey) {
         const sound = getSoundWithHotkey(e.keyCode);
         if(sound && sound.api) sound.api.onHotkey();
+    }
+
+    if(!e.ctrlKey && !e.shiftKey) {
+        const room = getRoomWithHotkey(e.keyCode);
+        if(room) setRoomActive(room.id);
     }
 }
 

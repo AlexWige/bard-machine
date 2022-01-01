@@ -77,21 +77,35 @@
     }
 
     #bottom-bar .center-controls {
+        display: flex;
         position: relative;
+        align-items: center;
         overflow: hidden;
         box-sizing: border-box;
-        margin: 9px auto;
-        width: 90%;
-        height: 40px;
-        max-width: 450px;
+        margin: 0 auto 0 auto;
+        width: clamp(100px, 90%, 420px);
+        height: 95%;
+        gap: 30px;
 
         i.stop {
-            position: relative;
             display: block;
+            position: relative;
             line-height: 31px;
-            width: 30px;
-            height: 30px;
+            width: 28px;
+            height: 35px;
             margin-top: 4px;
+
+            &::after {
+                position: absolute;
+                width: 100%;
+                height: 100%;
+                font-family: 'icomoon';
+                content: '\ea1e';
+                font-size: 28px;
+                cursor: pointer;
+                font-style: normal;
+                opacity: 0.8;
+            }
 
             &:hover::after {
                 transform: scale(1.1);
@@ -99,42 +113,26 @@
             }
         }
 
-        i.stop::after {
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            font-family: 'icomoon';
-            content: '\ea1e';
-            font-size: 30px;
-            box-sizing: border-box;
-            font-style: normal;
-            cursor: pointer;
-            opacity: 0.8;
-        }
-
         .volume {
+            flex: 1;
             display: block;
-            position: absolute;
-            top: 16px;
-            left: 65px;
-            right: 105px;
+            position: relative;
             height: 8px;
         }
 
         .switch {
             display: block;
-            position: absolute;
-            top: 11px;
-            right: 38px;
-            height: 8px;
+            position: relative;
+            width: 58px;
+            overflow: visible;
+            height: 18px;
 
             img {
                 width: 18px;
                 display: block;
                 position: absolute;
-                right: -29px;
-                top: 2px;
+                left: 39px;
+                top: 1.5px;
                 opacity: 0.6;
 
                 &.active {

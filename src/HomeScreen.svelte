@@ -5,6 +5,7 @@
     import { fly } from "svelte/transition";
     import { onMount } from "svelte";
     const { ipcRenderer } = window.require('electron');
+    import { version } from "./player-store";
 
     $: style = `--bg: ${globalStyles.bg};`
         + `--topBarHeight: ${globalStyles.topBarSize};`
@@ -25,7 +26,7 @@
 <div id="home-screen-view" style={style} class="custom-scroll">
     <div class="container">
         <img src="icon.svg" alt="Bard Machine Icon" class="center" id="logo"/>
-        <h1 class="center">Bard Machine <span class="version">v0.5</span></h1>
+        <h1 class="center">Bard Machine <span class="version">v{version}</span></h1>
         <div class="home-menu">        
             <ul id="home-options" in:fly="{{ x: -200 }}">
                 <li on:click="{() => ipcRenderer.send('dialog-create-collection')}">

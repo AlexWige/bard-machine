@@ -1,11 +1,12 @@
 import { writable } from "svelte/store";
 import Room from "./room";
 import roomsStore from "./rooms-store";
-import collectionLoader from "../collection-loader";
 import soundStore from "../sound-blocks/sound-store";
+import gettableStore from "../utils/gettable-store";
 
-export const mainRoom = writable(new Room('Main', 0, true));
+export const mainRoom = gettableStore(new Room('Main', 0, true));
 let roomsAPIs = [];
+export const currentRoomID = gettableStore(0);
 
 export function onAppMount() {
     window.addEventListener('collection-opened', onCollectionOpened);
@@ -36,12 +37,11 @@ export function createRoom(name) {
     refreshPlayingCounts();
     // Open new room
     setRoomActive(newRoomID);
-    collectionLoader.saveCollection();
 }
 
 export function getRoomActiveSoundTitleList(roomID) {
     const soundData = soundStore.getAllData();
-    
+
     return {
         music: soundData.filter(data => data.category == 'music' && data.rooms['R' + roomID]?.isPlaying)
                 .map(data => data.title),
@@ -81,6 +81,20 @@ export function getRoomByID(id) {
     return room;
 }
 
+export function getRoomWithHotkey(keyCode) {
+    let room;
+    mainRoom.update(r => {
+        if(r.hotkeyCode == keyCode) room = r;
+        return r;
+    });
+    if(room) return room;
+    roomsStore.update(store => {
+        room = store.find(r => r.hotkeyCode == keyCode);
+        return store;
+    });
+    return room;
+}
+
 export function setRoomActive(id) {
     mainRoom.update(room => {
         room.isActive = id == 0;
@@ -103,6 +117,7 @@ export function setRoomActive(id) {
         });
         return store;
     });
+    currentRoomID.set(id);
 }
 
 export function registerRoomAPI(api) {

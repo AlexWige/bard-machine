@@ -32,6 +32,8 @@
     function onButtonPressed(e) {
         if(!enabled) return;
         getInputModal()?.show(onKeyAssign);
+        e.preventDefault();
+        e.stopPropagation();
     }
 </script>
 

@@ -62,7 +62,11 @@
         let ratio = (x - rect.left) / (rect.right - rect.left);
         ratio = Math.min(Math.max(ratio, 0), 1);
         if(isNaN(ratio)) return;
+        activeBar.classList.toggle('no-transition', true);
+        activeBar.offsetHeight;
         moveKnob(ratio);
+        activeBar.offsetHeight;
+        activeBar.classList.toggle('no-transition', false);
     }
 
     function moveKnob(vol) {
@@ -73,7 +77,9 @@
     }
 
     function updateVolume(volume) {
-        if(activeBar) activeBar.style.width = volume * 100 + '%';
+        if(activeBar) {
+            activeBar.style.width = volume * 100 + '%';
+        }
     }
 </script>
 
@@ -145,7 +151,12 @@
                 top: $safe-margin;
                 bottom: $safe-margin;
                 width: 60%;
+                transition: width 0.5s;
                 background-color: var(--barColor, #ccc);
+            }
+
+            .no-transition {
+                transition: none !important;
             }
         
             .volume-btn {
