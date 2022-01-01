@@ -1,7 +1,10 @@
 import soundStore from './sound-blocks/sound-store';
 const { ipcRenderer } = window.require('electron');
 import { onHomeScreen } from "./player-store";
+import roomsStore from './rooms/rooms-store';
 import { collectionPath, recentlyOpened } from './collection-paths';
+import { SoundStoreItem } from "./sound-blocks/sound-store-item";
+import { version } from './player-store';
 import _ from 'lodash';
 const fs = require('fs');
 const path = require('path');
@@ -29,6 +32,7 @@ function onAppDestroy() {
 
 function createCollection(path) {
     if(!path.endsWith('.bmsounds')) path += '.bmsounds';
+    roomsStore.set([]);
     collectionPath.set(path);
     saveCollection();
     openCollection(path);
@@ -40,10 +44,33 @@ function openCollection(path) {
     addToRecentlyOpened(path);
     collectionPath.set(path);
     if(fs.existsSync(path)) {
-        fs.readFile(path, "utf8", (err, data) => {
-            soundStore.fromJSON(data);
+        fs.readFile(path, "utf8", (err, fileData) => {
+            let data = {};
+            try {
+                data = JSON.parse(fileData);
+            } catch {
+                data = {};
+            };
+
+            if(data.sounds) {
+                soundStore.update(store => {
+                    store = [];
+                    for (let i = 0; i < data.sounds.length; i++) {
+                        store.push(new SoundStoreItem(i, data.sounds[i]))
+                    }
+                    return store; 
+                })
+            }
+            if(data.rooms) {
+                roomsStore.update(store => {
+                    store = data.rooms;
+                    return store; 
+                });
+            }
+
             refreshSoundPaths();
             onHomeScreen.set(false);
+            window.dispatchEvent(new Event('collection-opened'))
         });
     }
 }
@@ -54,10 +81,15 @@ function closeCollection() {
 }
 
 function saveCollection() {
-    const jsonData = soundStore.toJSON();
+    const jsonData = JSON.stringify({
+        version: version,
+        sounds: soundStore.getAllData(),
+        rooms: roomsStore.get() ?? []
+    });
     const path = collectionPath.get();
     if(!path || path == '') return;
     fs.writeFile(path, jsonData, "utf8", () => {});
+    window.dispatchEvent(new Event('collection-saved'))
 }
 
 function refreshSoundPaths() {

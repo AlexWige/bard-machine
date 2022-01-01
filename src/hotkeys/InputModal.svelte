@@ -1,12 +1,11 @@
 <script>
     import globalStyles from "../style/global-styles";
     import { onMount } from "svelte";
-    import { inputModalActive, editedSoundID } from "./hotkey-manager";
     import * as hotkeyManager from "./hotkey-manager";
 
     $: style = `--bgCache: ${globalStyles.bg.darken(0.5).fade(0.1).rgb()};`
         + `--boxBg: ${globalStyles.bg.lighten(0.6).rgb()};`
-        + `--displayed: ${$inputModalActive ? 'block' : 'none'};`
+        + `--displayed: ${isActive ? 'block' : 'none'};`
         + `--topBarHeight: ${globalStyles.topBarSize};`;
 
     onMount(async () => {
@@ -17,18 +16,33 @@
         show: show,
         hide: hide
     }
+
+    let onCurrentKeyAssign;
+    let isActive = false;
     
-    export function show(soundID) {
-        editedSoundID.set(soundID);
-        inputModalActive.set(true);
+    export function show(onKeyAssign) {
+        onCurrentKeyAssign = onKeyAssign;
+        hotkeyManager.addKeyEventCatcher(onKeyPressWhileActive);
+        isActive = true;
     }
 
     export function hide() {
-        inputModalActive.set(false);
+        hotkeyManager.removeKeyEventCatcher(onKeyPressWhileActive);
+        isActive = false;
+    }
+
+    function onKeyPressWhileActive(e) {
+        // Escape key just exits menu
+        if(e.keyCode != 27) {
+            const keyName = hotkeyManager.processKeyName(e.keyCode, e.key);
+            onCurrentKeyAssign(e.keyCode, keyName);
+        }
+        hide();
+        return false;
     }
     
     function unassignKey() {
-        hotkeyManager.setSoundHotkey($editedSoundID, -1, '');
+        onCurrentKeyAssign(-1, '');
         hide();
     }
 </script>

@@ -3,6 +3,7 @@
     import collectionLoader from "./collection-loader";
     import { collectionPath } from "./collection-paths";
     import * as pointerManager from "./pointer/pointer-manager";
+    import * as roomsManager from "./rooms/rooms-manager";
     import { onHomeScreen } from "./player-store";
     import { onDestroy, onMount } from "svelte";
     import * as hotkeys from "./hotkeys/hotkey-manager";
@@ -24,6 +25,7 @@
         pointerManager.onAppMount();
         collectionLoader.onAppMount();
         hotkeys.onAppMount();
+        roomsManager.onAppMount();
         ipcRenderer.send('app-mounted');
 
         // Autosave collection every 30s
@@ -44,14 +46,15 @@
         });
 
         // **** ON DEV
-        //collectionLoader.openCollection('C:/Alex/RPG/_Export/tests.bmsounds');
-        //$onHomeScreen = false;
+        collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        $onHomeScreen = false;
     });
 
     onDestroy(async() => {
         collectionLoader.onAppDestroy();
         pointerManager.onAppDestroy();
         hotkeys.onAppDestroy();
+        roomsManager.onAppDestroy();
         clearInterval(saveInterval);
     });
 </script>

@@ -2,7 +2,7 @@
     import SoundBlock from './sound-blocks/SoundBlock.svelte';
     import soundStore from './sound-blocks/sound-store';
     import _ from 'lodash';
-    import AddSoundButton from './AddSoundButton.svelte';
+    import AddSoundButton from './sound-blocks/AddSoundButton.svelte';
     import collectionLoader from "./collection-loader";
 
     export let category;
@@ -32,6 +32,8 @@
         box-sizing: border-box;
         padding: 15px;
         padding-bottom: 40px;
+        flex: 1;
+        min-width: 250px;
 
         .empty-sound {
             width: 80%;

@@ -2,6 +2,7 @@
     import PlayButton from './PlayButton.svelte';
     import VolumeSlider from './VolumeSlider.svelte';
     import globalStyles from '../style/global-styles';
+    import AssignKeyButton from "../hotkeys/AssignKeyButton.svelte";
     import Color from 'color';
     import soundStore from './sound-store';
     import { globalVolume, bigBlocks } from '../player-store';
@@ -12,10 +13,9 @@
     import * as selection from "../pointer/selection";
     import * as contextMenu from "../context-menu/context-menu";
     import collectionLoader from "../collection-loader";
-    import { getInputModal } from "../hotkeys/hotkey-manager";
     import { getContextMenuOptions } from "./sound-block-context-menu";
+    import * as roomsManager from "../rooms/rooms-manager";
     import tippy from 'tippy.js';
-import gettableStore from '../utils/gettable-store';
     
     export let id;
     export let soundData;
@@ -39,9 +39,10 @@ import gettableStore from '../utils/gettable-store';
     }
 
     $: hotkeyName = soundData.hotkeyName ?? '';
-    $: keyFontSize = getAssignKeySize(hotkeyName ? hotkeyName.length : 0, $bigBlocks); 
     $: missing = soundData.sources.find(s => s.isMissing);
     $: onSoundStoreChanged($soundStore);
+    $: isSmall = !$bigBlocks;
+    $: hotkeyButtonEnabled = !missing;
 
     const api = {
         getNode: () => dom.soundBlock,
@@ -64,6 +65,9 @@ import gettableStore from '../utils/gettable-store';
         moveVolume: (delta) => {
             soundData.volume += delta;
             soundData.volume = _.clamp(soundData.volume, 0, 1);
+        },
+        setVolume: (volume) => {
+            soundData.volume = _.clamp(volume, 0, 1);
         },
         refreshAudioPath: () => {
             const sourceIndex = getCurrentSourceIndex();
@@ -126,8 +130,7 @@ import gettableStore from '../utils/gettable-store';
         api.setSourceIndex(0);
         sound.src = getSartingSourcePath();
         sound.onended = () => onSoundEnd();
-        
-        tippy(dom.assignButton, { content:  'Assign hotkey' });
+
         tippy(dom.volumeSlider, { content: 'Sound volume' });
         titleTippy = tippy(dom.titleBar, { content: soundData.title });
     });
@@ -177,18 +180,23 @@ import gettableStore from '../utils/gettable-store';
         }
     }
 
-    function getAssignKeySize(keyNameLength, bigBlocks) {
-        if(bigBlocks) {
-            if(keyNameLength <= 1) return '25px';
-            else if(keyNameLength == 2) return '21px';
-            else if(keyNameLength == 3) return '18px';
-            else return '13px';
-        } else {
-            if(keyNameLength <= 1) return '17.5px';
-            else if(keyNameLength == 2) return '15.5px';
-            else if(keyNameLength == 3) return '13.5px';
-            else return '10px';
-        }
+    function onKeyAssign(keyCode, keyName) {
+        soundStore.update(store => {
+            store.forEach(item => {
+                // Remove other sound hotkey with same keycode
+                if(item.data.hotkeyCode == keyCode) {
+                    item.data.hotkeyCode = '';
+                    item.data.hotkeyName = '';
+                }
+                // Assign hotkey
+                if(item.id == id) {
+                    item.data.hotkeyCode = keyCode;
+                    item.data.hotkeyName = keyName;
+                }
+            });
+            return store;
+        });
+        collectionLoader.saveCollection();
     }
 
     function onSoundEnd() {
@@ -209,7 +217,16 @@ import gettableStore from '../utils/gettable-store';
     }
 
     function onVolumeChange(dataVolume, globalVolume, faderValue) {
-        if(sound) sound.volume = dataVolume * globalVolume * faderValue;
+        if(sound) {
+            sound.volume = dataVolume * globalVolume * faderValue;
+        
+            // Store room info
+            const currentRoomID = roomsManager.getActiveRoomID();
+            soundData.rooms['R' + currentRoomID] = { 
+                isPlaying: isPlaying && soundData.category != 'effects', 
+                volume: dataVolume 
+            };
+        }
     }
 
     function stopSound() {
@@ -254,6 +271,13 @@ import gettableStore from '../utils/gettable-store';
             fader?.start(0.0);
             if(soundData.category == 'effects') skipFade = true;
         }
+        
+        // Store room info
+        if(soundData.category != 'effects') {
+            const currentRoomID = roomsManager.getActiveRoomID();
+            soundData.rooms['R' + currentRoomID] = { isPlaying: play, volume: soundData.volume };
+            roomsManager.refreshPlayingCounts();
+        }
 
         if(skipFade) fader?.skip();
     }
@@ -261,15 +285,10 @@ import gettableStore from '../utils/gettable-store';
     function onFaderEnd() {
         if(faderValue <= 0) sound.pause();
     }
-
-    function onAssignButtonPressed(e) {
-        if(missing) return;
-        getInputModal()?.show(id);
-    }
 </script>
 
 <div 
-    class="sound-block" class:small={!$bigBlocks} class:selected={isSelected} class:missing={missing} style="{style}"
+    class="sound-block" class:small={isSmall} class:selected={isSelected} class:missing={missing} style="{style}"
     bind:this={dom.soundBlock}
     data-id={id}
 >
@@ -291,9 +310,7 @@ import gettableStore from '../utils/gettable-store';
                 />
             </div>
         </div>       
-        <div bind:this={dom.assignButton} data-blockselection={true} class="assign-btn" on:click={onAssignButtonPressed} style="font-size: {keyFontSize}">
-            {hotkeyName}
-        </div>         
+        <AssignKeyButton bind:hotkeyName={hotkeyName} bind:small={isSmall} onKeyAssign={onKeyAssign} bind:enabled={hotkeyButtonEnabled}/>
     </div>
     <PlayButton 
         bind:domElement={dom.playButton} 
@@ -362,39 +379,6 @@ import gettableStore from '../utils/gettable-store';
                 height: 9px;
             }
 
-            .assign-btn {
-                position: absolute;
-                height: 40px;
-                width: 40px;
-                right: 7px;
-                top: 6px;
-                box-sizing: border-box;
-                border: 3px solid var(--assignButtonBorder, #555);
-                border-radius: 5px;
-                background-color: transparentize(#000, 0.8);
-                color: white;
-                text-align: center;
-                padding: 5px;
-                line-height: 26px;
-                font-size: 25px;
-                font-weight: 600;
-                cursor: pointer;
-                display: flex;
-                justify-content: center;
-                overflow: hidden;
-
-                &:hover {
-                    transition: 0.03s;
-                    transform: scale(1.08);
-                    background-color: transparentize(#000, 0.7);
-                }
-
-                &:active {
-                    transition: transform 0.02s;
-                    transform: scale(0.98);
-                }
-            }
-
             .info-zone {
                 position: absolute;
                 top: 5px;            
@@ -428,19 +412,6 @@ import gettableStore from '../utils/gettable-store';
                 left: 0;
                 top: 1px;
                 bottom: 0;
-            }
-
-            .assign-btn {
-                width: 24px;
-                height: 24px;
-                top: 3px;
-                right: 4px;
-                border-width: 2px;
-                border-radius: 3px;
-                border-color: transparent;
-                font-size: 17.5px;
-                padding: 2px;
-                line-height: 1em;
             }
 
             .volume {
@@ -478,7 +449,7 @@ import gettableStore from '../utils/gettable-store';
             width: 20px;
 
             &::before {
-                content: "\e903";
+                content: "\e906";
                 position: absolute;
                 display: block;
                 top: -14px;
@@ -508,7 +479,7 @@ import gettableStore from '../utils/gettable-store';
                 color: rgb(255, 166, 166);
             }
 
-            .assign-btn {
+            :global(.assign-btn) {
                 cursor: default;
 
                 &:hover {

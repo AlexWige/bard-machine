@@ -3,8 +3,8 @@
     import { onMount, onDestroy } from "svelte";
     import * as reorderables from "../pointer/reorderables";
     import * as selectionManager from "../pointer/selection";
-    import { modal } from "../modal/modal-manager";
     import * as contextMenuManager from "../context-menu/context-menu";
+    import { modal } from "../modal/modal-manager";
     import soundStore from "../sound-blocks/sound-store";
 
     $: style = `--background: ${globalStyles.bg.lighten(0.5)};`

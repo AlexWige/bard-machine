@@ -10,6 +10,14 @@ export class SoundData {
         this.volume = category == 'music' ? 0.6 : 0.8;
         this.hotkeyCode = -1;
         this.hotkeyName = '';
+        this.rooms = {};
+    }
+}
+
+export class SoundDataRoomOptions {
+    constructor(isPlaying, volume) {
+        this.isPlaying = isPlaying;
+        this.volume = volume;
     }
 }
 

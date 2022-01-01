@@ -1,7 +1,6 @@
 //* Handles reorderable element
 /*  ---
     Only nodes in the same parent can be reodered
-    - Reorderable nodes must be marked as draggable ('data-draggable' attribute to true)
     - Reorderable nodes must be selectables
     - Position must be set to 'relative'
     - Reorderable elements must register an 'api' object with the following methods:

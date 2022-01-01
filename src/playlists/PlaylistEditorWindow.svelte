@@ -5,7 +5,7 @@
     import * as playlistManager from "./playlists";
     import collectionLoader from "../collection-loader";
     import soundStore from "../sound-blocks/sound-store";
-    import AddSoundButton from "../AddSoundButton.svelte";
+    import AddSoundButton from "../sound-blocks/AddSoundButton.svelte";
     import { SoundDataSource, getNewSourceID } from "../sound-blocks/sound-data";
     import { modal } from "../modal/modal-manager";
 

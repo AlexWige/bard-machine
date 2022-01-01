@@ -4,6 +4,7 @@ import soundStore from './sound-store';
 const { ipcRenderer } = window.require('electron');
 import { groupIntoPlaylist, ungroupPlaylist } from "../playlists/playlists";
 import * as playlistManager from "../playlists/playlists";
+import * as roomManager from "../rooms/rooms-manager";
 
 export function getContextMenuOptions(nodes, soundAPI) {
     let options = [];
@@ -99,7 +100,10 @@ export function getContextMenuOptions(nodes, soundAPI) {
         id: 'remove-sound-block',
         solo: 'Remove',
         multiple: 'Remove sounds',
-        onClickEach: () => soundStore.removeSound(soundID),
+        onClickEach: () => {
+            soundStore.removeSound(soundID);
+            roomManager.refreshPlayingCounts();
+        },
         saveAfter: true
     });
 

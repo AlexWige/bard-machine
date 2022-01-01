@@ -5,9 +5,8 @@ import * as selectionManager from "../pointer/selection";
 import { modal } from "../modal/modal-manager";
 const { ipcRenderer } = window.require('electron');
 
-export const inputModalActive = gettableStore(false);
-export const editedSoundID = gettableStore(-1);
-
+// Add a function to this to catch key event, if it returns false, the event will stop
+let eventCatchers = [];
 let inputModalAPI = undefined;
 
 export function onAppMount() {
@@ -18,11 +17,32 @@ export function onAppDestroy() {
     window.removeEventListener('keydown', onKeyDown);
 }
 
+export function addKeyEventCatcher(catcher) {
+    if(!eventCatchers.includes(catcher)) eventCatchers.push(catcher);
+}
+
+export function removeKeyEventCatcher(catcher) {
+    eventCatchers = eventCatchers.filter(c => c != catcher);
+}
+
 function onKeyDown(e) {
+    // Ignore if inside text input field
     if(document.activeElement.type == 'text') return;
-    if(e.ctrlKey && e.shiftKey) return;
-    if(modal.isVisible()) return;
     
+    // Ignore certain modifier keys
+    const ignoredKeycodes = [16 /*Shift*/, 17 /*Ctrl*/, 144 /*Numlock*/];
+    if(ignoredKeycodes.includes(e.keyCode)) return;
+
+    // Check all registered event catchers
+    for (let i = 0; i < eventCatchers.length; i++) {
+        let continueEvent = eventCatchers[i](e);
+        if(!continueEvent) return;
+    }
+    
+    if(!e.ctrlKey && !e.keyCode) e.preventDefault();
+
+    /***** PROGRAM HOTKEYS *****/
+
     // Ctrl+N → New collection...
     if(e.ctrlKey && e.keyCode == 78) {
         ipcRenderer.send('dialog-create-collection');
@@ -38,8 +58,9 @@ function onKeyDown(e) {
         soundStore.stopAll();
         return;
     }
+
+    // Left/Right Arrows + Spacebar
     if(e.keyCode == 37 || e.keyCode == 39 || e.keyCode == 32) {
-        e.preventDefault();
         const selectedSounds = selectionManager.getAllSelected()
             .filter(api => api.getNode().classList.contains('sound-block'))
             .map(api => soundStore.getItemByID(api.getNode().dataset?.id));
@@ -61,31 +82,16 @@ function onKeyDown(e) {
         
         return;
     }
-    
-    // Ignore certain modifier keys
-    const ignoredKeycodes = [16 /*Shift*/, 17 /*Ctrl*/, 144 /*Numlock*/];
-    if(ignoredKeycodes.includes(e.keyCode)) return;
-    e.preventDefault();
 
-    // If assigning input (modal opened)
-    if(inputModalActive.get()) {
-        // Escape key just exits menu
-        if(e.keyCode == 27) {
-            inputModalAPI?.hide();
-            return;
-        }
-        const keyName = processKeyName(e.keyCode, e.key);
-        setSoundHotkey(editedSoundID.get(), e.keyCode, keyName);
-        inputModalAPI?.hide();
-        return;
+    /***** SOUNDS HOTKEYS *****/
+
+    if(!e.ctrlKey && !e.shiftKey) {
+        const sound = getSoundWithHotkey(e.keyCode);
+        if(sound && sound.api) sound.api.onHotkey();
     }
-    
-    // Else, check sounds for hotkey
-    const sound = getSoundWithHotkey(e.keyCode);
-    if(sound && sound.api) sound.api.onHotkey();
 }
 
-function processKeyName(code, name) {
+export function processKeyName(code, name) {
     switch (code) {
         case  8: return "⌫"; 
         case  9: return "⇥"; 
@@ -121,21 +127,4 @@ export function getSoundWithHotkey(keyCode) {
         return store;
     });
     return sound;
-}
-
-export function setSoundHotkey(soundID, keyCode, keyName) {
-    soundStore.update(store => {
-        store.forEach(item => {
-            if(item.data.hotkeyCode == keyCode) {
-                item.data.hotkeyCode = '';
-                item.data.hotkeyName = '';
-            }
-            if(item.id == soundID) {
-                item.data.hotkeyCode = keyCode;
-                item.data.hotkeyName = keyName;
-            }
-        });
-        return store;
-    });
-    collectionLoader.saveCollection();
 }

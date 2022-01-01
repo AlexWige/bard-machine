@@ -137,11 +137,28 @@ input:focus::placeholder {
     background-color: rgba(0,0,0, 0.1);
 }
 
-.tippy-box {
+div[data-tippy-root]>.tippy-box .tippy-content .tippy-box {
+    background-color: transparent !important;
+}
+
+div[data-tippy-root]>.tippy-box {
     background-color: #181818 !important;
     border-radius: 2px !important;
 }
 
-.tippy-arrow {
+div[data-tippy-root]>.tippy-box .tippy-arrow {
     color: #181818 !important;
+}
+
+div[data-tippy-root]>.tippy-box[data-theme~='sidebar'] {
+    background-color: #4b4b4b !important;
+    border-radius: 2px !important;
+}
+
+div[data-tippy-root]>.tippy-box[data-theme~='sidebar'] .tippy-content {
+    background-color: #4b4b4b !important;
+}
+
+div[data-tippy-root]>.tippy-box[data-theme~='sidebar'] .tippy-arrow {
+    color: #4b4b4b !important;
 }

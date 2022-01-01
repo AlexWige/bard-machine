@@ -72,7 +72,7 @@ function createSoundStore() {
         getPlayingSoundsInCategory: (category) => {
             let sounds = [];
             update(store => {
-                sounds = store.filter(sound => sound.data.category == category && sound.api.isPlaying());
+                sounds = store.filter(sound => sound.data.category == category && sound.api?.isPlaying());
                 return store;
             });
             return sounds;
@@ -85,29 +85,13 @@ function createSoundStore() {
                 return store;
             });
         },
-        toJSON: () => {
-            let result = '';
+        getAllData: () => {
+            let data;
             update(store => {
-                const datas = store.map(s => s.data);
-                result = JSON.stringify(datas); 
+                data = store.map(s => s.data);
                 return store; 
             })
-            return result;
-        },
-        fromJSON: (jsonData) => {
-            let datas;
-            try {
-                datas = JSON.parse(jsonData);
-            } catch {
-                datas = [];
-            }
-            update(store => {
-                store = [];
-                for (let i = 0; i < datas.length; i++) {
-                    store.push(new SoundStoreItem(i, datas[i]))
-                }
-                return store; 
-            })
+            return data;
         }
 	};
 }

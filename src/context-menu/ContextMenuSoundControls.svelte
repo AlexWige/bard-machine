@@ -20,8 +20,10 @@
     }
 
     function subscribeSound() {
-        soundIsPlaying = soundAPI.isPlaying();
-        progressBar.subscribeSound(soundAPI);
+        if(soundAPI) {
+            soundIsPlaying = soundAPI.isPlaying();
+            progressBar.subscribeSound(soundAPI);
+        }
     }
 
     function onStopPressed() {

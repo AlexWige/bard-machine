@@ -4,6 +4,7 @@
     import ModalInput from "./ModalInput.svelte";
     import { tick, onMount, onDestroy } from "svelte";
     import * as modalManager from "./modal-manager";
+    import * as hotkeyManager from "../hotkeys/hotkey-manager";
 
     $: style = `--bgCache: ${globalStyles.bg.darken(0.5).fade(0.4)};`
             + `--boxBg: ${globalStyles.bg.lighten(0.6)};`
@@ -38,10 +39,12 @@
 
     export function hide() {
         visible = false;
+        hotkeyManager.removeKeyEventCatcher(catchKeyEvent);
     }
 
     export function show(_text, _options = null, _inputField = null) {
         visible = true;
+        hotkeyManager.addKeyEventCatcher(catchKeyEvent);
         text = _text;
         if(options) options = _options;
         hasInputField = (_inputField != null);
@@ -53,6 +56,10 @@
                 inputField.focus();
             })();
         }
+    }
+
+    function catchKeyEvent(e) {
+        return false;
     }
 </script>
 

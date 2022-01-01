@@ -164,6 +164,8 @@ export function onRightClick(e) {
         return false;
     } else {
         contextMenuAPI.show(e.clientX, e.clientY, options, apis);
+        const event = new Event('context-menu-opened');
+        e.path[0].dispatchEvent(event);
         return true;
     }
 }

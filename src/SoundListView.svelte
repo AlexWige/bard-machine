@@ -15,16 +15,12 @@
 
 <div id="sound-list-view" style="{style}">
     <div class="center-container">
-        <!-- <RoomSidebar/> -->
+        <RoomSidebar/>
         <div id="sound-list" class="custom-scroll">
             <div class="container">
-                <div class="first-col">
-                    <SoundCategory category="music"/>
-                    <SoundCategory category="ambient"/>
-                </div>
-                <div class="second-col">
-                    <SoundCategory category="effects"/>
-                </div>
+                <SoundCategory category="music"/>
+                <SoundCategory category="ambient"/>
+                <SoundCategory category="effects"/>
             </div>
             <InputModal/>
         </div>
@@ -64,47 +60,11 @@
         }
 
         .container {
+            display: flex;
+            flex-wrap: wrap;
             width: 94%;
             max-width: 1450px;
             margin: auto;
-        }
-
-        .first-col {
-            float: left;
-            width: 66.66%;
-
-            @media (max-width: 950px) {
-                width: 50%;
-            }
-
-            @media (max-width: 650px) {
-                width: 100%;
-            }
-
-            :global(.category) {
-                width: 50%;
-                
-                @media (max-width: 950px) {
-                    width: 100%;
-                }
-            }
-        }   
-
-        .second-col {
-            float: left;
-            width: 33.33%;
-            
-            @media (max-width: 950px) {
-                width: 50%;
-            }
-
-            @media (max-width: 650px) {
-                width: 100%;
-            }
-
-            :global(.category) {
-                width: 100%;
-            }
         }
     }
 </style>

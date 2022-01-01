@@ -1,6 +1,6 @@
 import { writable } from "svelte/store";
-import _ from 'lodash';
 
+export const version = '0.8';
 export const globalVolume = writable(0.8);
 export const bigBlocks = writable(false);
 export const onHomeScreen = writable(true);
