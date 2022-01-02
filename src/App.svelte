@@ -38,13 +38,13 @@
         tippy.setDefaultProps({ delay: [1000, 0], touch: false });
 
         // **** TEST BUTTON
-        window.addEventListener('keydown', e => {
-            if(!(e.key == "t" && e.ctrlKey)) return;
-        });
+        // window.addEventListener('keydown', e => {
+        //     if(!(e.key == "t" && e.ctrlKey)) return;
+        // });
 
         // **** ON DEV
-        collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
-        $onHomeScreen = false;
+        // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        // $onHomeScreen = false;
     });
 
     onDestroy(async() => {
