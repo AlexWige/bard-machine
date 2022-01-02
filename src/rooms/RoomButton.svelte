@@ -107,7 +107,8 @@
         activeSoundTitleList = rooms.getRoomActiveSoundTitleList(id);
         if(!isMain) tippyBox = tippy(mainNode, { 
             content: tippyBoxTemplate, 
-            theme: 'sidebar'
+            theme: 'sidebar',
+            onShow: () => { activeSoundTitleList = rooms.getRoomActiveSoundTitleList(id); }
         });
         else tippyBox = tippy(mainNode, { content: 'Go back to main state', theme: 'sidebar' });
     }

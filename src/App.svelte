@@ -46,7 +46,7 @@
         //     })
         // });
 
-        // // **** ON DEV
+        // **** ON DEV
         // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
         // $onHomeScreen = false;
     });
