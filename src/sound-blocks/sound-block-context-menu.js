@@ -13,10 +13,10 @@ export function getContextMenuOptions(nodes, soundAPI) {
     // Get selected music sound items
     const selectedMusics = nodes.map(node => soundStore.getItemFromNode(node))
         .filter(item => item && item.data.category == 'music');
-    const selectedSoloMusic = selectedMusics.filter(item => item.data.sources.length == 1);
+    const selectedSoloMusics = selectedMusics.filter(item => item.data.sources.length == 1);
     const selectedPlaylists = selectedMusics.filter(item => item.data.sources.length > 1);
 
-    if(selectedSoloMusic.length == nodes.length) {
+    if(selectedSoloMusics.length == nodes.length) {
         options.push({
             id: 'group-into-playlist',
             multiple: 'Group into playlist...',
@@ -27,7 +27,10 @@ export function getContextMenuOptions(nodes, soundAPI) {
                         { name: "Cancel", hotkey: 'Escape', onClick: () => modal.hide() },
                         { name: "OK", hotkey: 'Enter', onClick: () => {
                             let newName = modal.getInputValue();
-                            const newSoundItem = groupIntoPlaylist(selectedSoloMusic);
+                            selectedSoloMusics.forEach(music => {
+                                music.api.stop();
+                            });
+                            const newSoundItem = groupIntoPlaylist(selectedSoloMusics);
                             newSoundItem.data.title = newName;
                             collectionLoader.saveCollection();
                             modal.hide();

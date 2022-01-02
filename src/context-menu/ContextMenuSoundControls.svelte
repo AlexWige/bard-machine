@@ -41,6 +41,7 @@
             soundAPI.setSourceIndex(soundAPI.getCurrentSourceIndex() - 1);
         }
         soundAPI.getSoundElement().currentTime = 0;
+        if(!soundAPI.isPlaying()) soundAPI.getSoundElement().pause();
     }
 
     function onNextPressed() {

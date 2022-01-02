@@ -1,13 +1,13 @@
 <script>
     import Color from "color";
     import { onMount } from "svelte";
-    import collectionLoader from "../collection-loader";
     import globalStyles from '../style/global-styles';
 
     export let volume;
     export let mainColor;
     export let isPlaying = false;
     export let onChange = (v) => {};
+    export let afterReleased = (v) => {};
     export let isBig = true;
     export let domElement = {};
     export let disabled = false;
@@ -53,7 +53,7 @@
         window.removeEventListener('pointerup', onPointerUp);
         window.removeEventListener('touchmove', onPointerMove);
         window.removeEventListener('touchend', onPointerUp);
-        collectionLoader.saveCollection();
+        afterReleased(volume);
     }
 
     function onPointerMove(e) {

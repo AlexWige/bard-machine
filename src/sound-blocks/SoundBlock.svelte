@@ -5,16 +5,16 @@
     import AssignKeyButton from "../hotkeys/AssignKeyButton.svelte";
     import Color from 'color';
     import soundStore from './sound-store';
-    import { globalVolume, bigBlocks } from '../player-store';
+    import { bigBlocks } from '../player-store';
     import _ from 'lodash';
     import { onDestroy, onMount } from 'svelte';
-    import Fader from './Fader.svelte';
     import * as reorderables from "../pointer/reorderables";
     import * as selection from "../pointer/selection";
     import * as contextMenu from "../context-menu/context-menu";
     import collectionLoader from "../collection-loader";
     import { getContextMenuOptions } from "./sound-block-context-menu";
     import * as roomsManager from "../rooms/rooms-manager";
+    import * as fadeSystem from "./fade-system";
     import tippy from 'tippy.js';
     
     export let id;
@@ -23,8 +23,6 @@
     let isPlaying = false;
     let isSelected = false;
     let sound = new Audio(getSartingSourcePath());
-    let fader;
-    let faderValue = 0;
     let titleTippy;
 
     $: onChangeSource(currentSourceID);
@@ -37,12 +35,6 @@
         playButton: undefined,
         assignButton: undefined
     }
-
-    $: hotkeyName = soundData.hotkeyName ?? '';
-    $: missing = soundData.sources.find(s => s.isMissing);
-    $: onSoundStoreChanged($soundStore);
-    $: isSmall = !$bigBlocks;
-    $: hotkeyButtonEnabled = !missing;
 
     const api = {
         getNode: () => dom.soundBlock,
@@ -57,7 +49,6 @@
             if(soundData.category == 'effects') {
                 isPlaying = true;
                 sound.currentTime = 0;
-                fader.skipToOne();
             } else {
                 isPlaying = !isPlaying;
             }
@@ -65,9 +56,11 @@
         moveVolume: (delta) => {
             soundData.volume += delta;
             soundData.volume = _.clamp(soundData.volume, 0, 1);
+            fadeSystem.update(fadeAPI);
         },
         setVolume: (volume) => {
             soundData.volume = _.clamp(volume, 0, 1);
+            fadeSystem.update(fadeAPI);
         },
         refreshAudioPath: () => {
             const sourceIndex = getCurrentSourceIndex();
@@ -88,6 +81,19 @@
         },
         getCurrentTime: () => sound.currentTime,
         getSoundElement: () => sound
+    }
+
+    const fadeAPI = {
+        getDataVolume: () => soundData.volume,
+        setSoundPlaying: (state) => {
+            if(!sound || sound.paused != state) return;
+            if(!state) sound.pause();
+            else sound.play();
+        },
+        setSoundVolume: (volume) => { 
+            if(sound) sound.volume = volume;
+        },
+        getPlayState: () => isPlaying
     }
 
     const selectableAPI = {
@@ -126,6 +132,7 @@
         reorderables.register(reorderableAPI);
         selection.register(selectableAPI);
         contextMenu.register(contextMenuAPI);
+        fadeSystem.register(fadeAPI);
         soundStore.setSoundAPI(id, api);
         api.setSourceIndex(0);
         sound.src = getSartingSourcePath();
@@ -139,12 +146,16 @@
         reorderables.unregister(reorderableAPI);
         selection.unregister(selectableAPI);
         contextMenu.unregister(contextMenuAPI);
+        fadeSystem.unregister(fadeAPI);
         sound.pause();
         sound.remove();
-        fader.pause();
     });
-    
-    $: onVolumeChange(soundData.volume, $globalVolume, faderValue);
+
+    $: hotkeyName = soundData.hotkeyName ?? '';
+    $: missing = soundData.sources.find(s => s.isMissing);
+    $: isSmall = !$bigBlocks;
+    $: hotkeyButtonEnabled = !missing;
+    $: onSoundStoreChanged($soundStore);
     $: onPlayingStateChange(isPlaying);
     $: mainColor = getMainColor(soundData.category);
     $: style = `--mainColor: ${mainColor.hex()};`
@@ -216,28 +227,14 @@
         }
     }
 
-    function onVolumeChange(dataVolume, globalVolume, faderValue) {
-        if(sound) {
-            sound.volume = dataVolume * globalVolume * faderValue;
-        
-            // Store room info
-            const currentRoomID = roomsManager.getActiveRoomID();
-            soundData.rooms['R' + currentRoomID] = { 
-                isPlaying: isPlaying && soundData.category != 'effects', 
-                volume: dataVolume 
-            };
-        }
-    }
-
     function stopSound() {
         if(!isPlaying) sound.currentTime = 0;
         else {
             isPlaying = false;
-            sound.currentTime = 0;
+            fadeSystem.skipPlayFade(fadeAPI);
+            fadeSystem.update(fadeAPI);
             sound.pause();
-            fader.onNextEnd(() => {
-                sound.currentTime = 0;
-            });
+            sound.currentTime = 0;
         }
     }
 
@@ -250,27 +247,21 @@
 
     function onPlayingStateChange(play) {
         if(play && missing) return;
-        let skipFade = false;
 
         if(play) {
             if(soundData.category == 'effects') {
-                sound.currentTime = 0;
-                skipFade = true;
+                sound.currentTime = 0; fadeSystem.skipPlayFade(fadeAPI);
             }
             if(soundData.category == 'music') {
                 const otherPlayingSounds = soundStore.getPlayingSoundsInCategory('music').filter(s => s.id != id);
                 otherPlayingSounds.forEach(sound => {
                     sound.api.setPlaying(false);
                 });
-                if(otherPlayingSounds.length == 0 && sound.currentTime == 0) skipFade = true;
+                if(sound.currentTime == 0) fadeSystem.skipPlayFade(fadeAPI);
             }
-            fader.start(1.0);
-            sound.play();
         }
-        else {
-            fader?.start(0.0);
-            if(soundData.category == 'effects') skipFade = true;
-        }
+        
+        fadeSystem.update(fadeAPI);
         
         // Store room info
         if(soundData.category != 'effects') {
@@ -278,12 +269,20 @@
             soundData.rooms['R' + currentRoomID] = { isPlaying: play, volume: soundData.volume };
             roomsManager.refreshPlayingCounts();
         }
-
-        if(skipFade) fader?.skip();
     }
 
-    function onFaderEnd() {
-        if(faderValue <= 0) sound.pause();
+    function onVolumeSliderChange(vol) {
+        fadeSystem.skipDataVolumeFade(fadeAPI);
+    }
+
+    function onVolumeSliderRelease(vol) {
+        // Store room info
+        const currentRoomID = roomsManager.getActiveRoomID();
+        soundData.rooms['R' + currentRoomID] = { 
+            isPlaying: isPlaying && soundData.category != 'effects', 
+            volume: soundData.volume 
+        };
+        collectionLoader.saveCollection();
     }
 </script>
 
@@ -307,6 +306,8 @@
                     bind:isPlaying={isPlaying} 
                     bind:disabled={missing}
                     bind:volume={soundData.volume}
+                    onChange={onVolumeSliderChange}
+                    afterReleased={onVolumeSliderRelease}
                 />
             </div>
         </div>       
@@ -319,11 +320,6 @@
         mainColor={mainColor} 
         bind:disabled={missing}
         bind:isPlaying={isPlaying}
-    />
-    <Fader 
-        bind:this={fader} 
-        bind:value={faderValue} 
-        onEnd={onFaderEnd}
     />
 </div>
 

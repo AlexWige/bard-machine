@@ -7,6 +7,8 @@
     import VolumeSlider from './sound-blocks/VolumeSlider.svelte';
     import tippy from "tippy.js";
     import { onMount, onDestroy } from "svelte";
+    import * as fadeSystem from './sound-blocks/fade-system';
+    import collectionLoader from "./collection-loader";
     
     $: style = `--barColor: ${globalStyles.bg.lighten(0.9).hex()};`;
 
@@ -17,7 +19,6 @@
     }
 
     let bigBlockUnsubscribe;
-    let volumeUnsubscribe;
 
     onMount(async() => {
         tippy(dom.stopButton, { content: 'Stop all sounds' });
@@ -37,22 +38,35 @@
         }
         if(!volume || isNaN(volume)) volume = 0.8;
         globalVolume.set(volume);
-        volumeUnsubscribe = globalVolume.subscribe(value => {
-            localStorage.setItem('global-volume', value);
-        });
     });
 
     onDestroy(async() => {
         bigBlockUnsubscribe();
-        volumeUnsubscribe();
     });
+
+    function onVolumeSliderChange(vol) {
+        fadeSystem.onGlobalVolumeChange();
+    }
+
+    function onVolumeSliderRelease(vol) {
+        fadeSystem.onGlobalVolumeChange();
+        localStorage.setItem('global-volume', vol);
+        collectionLoader.saveCollection();
+    }
 </script>
 
 <div id="bottom-bar" style={style}>
     <div class="center-controls">
         <i class="stop" bind:this={dom.stopButton} on:pointerdown="{soundStore.stopAll}"></i>
         <div class="volume">
-            <VolumeSlider mainColor={Color("#999")} bind:domElement={dom.volumeSlider} bind:volume={$globalVolume} isPlaying={true}/>
+            <VolumeSlider 
+                mainColor={Color("#999")} 
+                bind:domElement={dom.volumeSlider} 
+                bind:volume={$globalVolume} 
+                onChange={onVolumeSliderChange} 
+                afterReleased={onVolumeSliderRelease} 
+                isPlaying={true}
+            />
         </div>
         <div class="switch">
             <Switch bind:domElement={dom.bigBlocksSwitch} bind:checked={$bigBlocks}></Switch>
