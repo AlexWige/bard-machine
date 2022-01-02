@@ -4,6 +4,7 @@ import gettableStore from "../utils/gettable-store";
 import * as selectionManager from "../pointer/selection";
 import { modal } from "../modal/modal-manager";
 import { getRoomWithHotkey, setRoomActive } from "../rooms/rooms-manager";
+import roomsStore from "../rooms/rooms-store";
 const { ipcRenderer } = window.require('electron');
 
 // Add a function to this to catch key event, if it returns false, the event will stop
@@ -24,6 +25,30 @@ export function addKeyEventCatcher(catcher) {
 
 export function removeKeyEventCatcher(catcher) {
     eventCatchers = eventCatchers.filter(c => c != catcher);
+}
+
+export function deleteAllWithHotkey(keyCode) {
+    // Remove all sounds hotkey with same keycode
+    soundStore.update(store => {
+        store.forEach(item => {
+            if(item.data.hotkeyCode == keyCode) {
+                item.data.hotkeyCode = -1;
+                item.data.hotkeyName = '';
+            }
+        });
+        return store;
+    });
+
+    // Remove all rooms hotkey with same keycode
+    roomsStore.update(store => {
+        store.forEach(room => {
+            if(room.hotkeyCode == keyCode) {
+                room.hotkeyCode = -1;
+                room.hotkeyName = '';
+            }
+        });
+        return store;
+    });
 }
 
 function onKeyDown(e) {

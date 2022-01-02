@@ -37,12 +37,16 @@
 
         tippy.setDefaultProps({ delay: [1000, 0], touch: false });
 
-        // **** TEST BUTTON
+        // // **** TEST BUTTON
         // window.addEventListener('keydown', e => {
         //     if(!(e.key == "t" && e.ctrlKey)) return;
+        //     soundStore.update(store => {
+        //         console.log(store);
+        //         return store;
+        //     })
         // });
 
-        // **** ON DEV
+        // // **** ON DEV
         // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
         // $onHomeScreen = false;
     });

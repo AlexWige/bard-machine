@@ -39,6 +39,20 @@ export function createRoom(name) {
     setRoomActive(newRoomID);
 }
 
+export function removeRoom(id) {
+    roomsStore.update(store => {
+        store = store.filter(r => r.id != id);
+        return store;
+    });
+    soundStore.update(store => {
+        store.forEach(sound => {
+            if(sound.data.rooms['R' + id])
+                delete sound.data.rooms['R' + id];
+        });
+        return store;
+    });
+}
+
 export function getRoomActiveSoundTitleList(roomID) {
     const soundData = soundStore.getAllData();
 

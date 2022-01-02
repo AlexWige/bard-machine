@@ -13,6 +13,7 @@
     import * as contextMenu from "../context-menu/context-menu";
     import collectionLoader from "../collection-loader";
     import { getContextMenuOptions } from "./sound-block-context-menu";
+    import { deleteAllWithHotkey } from "../hotkeys/hotkey-manager";
     import * as roomsManager from "../rooms/rooms-manager";
     import * as fadeSystem from "./fade-system";
     import tippy from 'tippy.js';
@@ -192,13 +193,9 @@
     }
 
     function onKeyAssign(keyCode, keyName) {
+        deleteAllWithHotkey(keyCode);
         soundStore.update(store => {
             store.forEach(item => {
-                // Remove other sound hotkey with same keycode
-                if(item.data.hotkeyCode == keyCode) {
-                    item.data.hotkeyCode = '';
-                    item.data.hotkeyName = '';
-                }
                 // Assign hotkey
                 if(item.id == id) {
                     item.data.hotkeyCode = keyCode;
@@ -268,6 +265,7 @@
             const currentRoomID = roomsManager.getActiveRoomID();
             soundData.rooms['R' + currentRoomID] = { isPlaying: play, volume: soundData.volume };
             roomsManager.refreshPlayingCounts();
+            if(currentRoomID != 0) collectionLoader.saveCollection();
         }
     }
 

@@ -11,6 +11,7 @@
     import { modal } from "../modal/modal-manager";
     import tippy from "tippy.js"
     import collectionLoader from "../collection-loader";
+    import { deleteAllWithHotkey } from "../hotkeys/hotkey-manager";
 
     export let id = 0;
     export let name = '';
@@ -120,6 +121,7 @@
     }
 
     function onKeyAssign(keyCode, keyName) {
+        deleteAllWithHotkey(keyCode);
         if(isMain) {
             rooms.mainRoom.update(r => {
                 r.hotkeyCode = keyCode;
@@ -146,10 +148,7 @@
             solo: 'Remove',
             multiple: 'Remove',
             onClickEach: () => {
-                roomsStore.update(store => {
-                    store = store.filter(r => r.id != id);
-                    return store;
-                });
+                rooms.removeRoom(id);
             },
             saveAfter: true
         });
