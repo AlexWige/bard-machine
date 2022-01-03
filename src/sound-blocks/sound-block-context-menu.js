@@ -91,7 +91,7 @@ export function getContextMenuOptions(nodes, soundAPI) {
                 );
             }
         });
-    } else {
+    } else if(soundAPI.getData().sources.length == 1) {
         options.push({ 
             id: 'replace-sound-block',
             solo: 'Replace file...',
