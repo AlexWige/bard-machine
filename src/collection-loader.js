@@ -91,7 +91,6 @@ function closeCollection() {
 }
 
 function saveCollection(onSaved) {
-    console.log("save");
     if(isSaving) {
         if(onSaved) onFinishSaving.push(onSaved);
         return;
@@ -104,7 +103,10 @@ function saveCollection(onSaved) {
         rooms: roomsStore.get() ?? []
     });
     const path = collectionPath.get();
-    if(!path || path == '') return;
+    if(!path || path == '') {
+        if(onSaved) onSaved();
+        return;
+    }
     fs.writeFile(path, jsonData, "utf8", () => {
         if(onSaved) onSaved();
         window.dispatchEvent(new Event('collection-saved'))
