@@ -10,6 +10,9 @@ import { mainRoom } from './rooms/rooms-manager';
 const fs = require('fs');
 const path = require('path');
 
+let isSaving = false;
+let onFinishSaving = [];
+
 function onAppMount() {
     refreshRecentlyOpened();
     ipcRenderer.addListener('app-focused', onAppFocus);
@@ -35,7 +38,6 @@ function createCollection(path) {
     if(!path.endsWith('.bmsounds')) path += '.bmsounds';
     roomsStore.set([]);
     collectionPath.set(path);
-    saveCollection();
     openCollection(path);
 }
 
@@ -49,7 +51,8 @@ function openCollection(path) {
             let data = {};
             try {
                 data = JSON.parse(fileData);
-            } catch {
+            } catch(error) {
+                console.log(error);
                 data = {};
             };
 
@@ -87,7 +90,13 @@ function closeCollection() {
     collectionPath.set('');
 }
 
-function saveCollection() {
+function saveCollection(onSaved) {
+    console.log("save");
+    if(isSaving) {
+        if(onSaved) onFinishSaving.push(onSaved);
+        return;
+    }
+    isSaving = true;
     const jsonData = JSON.stringify({
         version: version,
         sounds: soundStore.getAllData(),
@@ -96,8 +105,25 @@ function saveCollection() {
     });
     const path = collectionPath.get();
     if(!path || path == '') return;
-    fs.writeFile(path, jsonData, "utf8", () => {});
-    window.dispatchEvent(new Event('collection-saved'))
+    fs.writeFile(path, jsonData, "utf8", () => {
+        if(onSaved) onSaved();
+        window.dispatchEvent(new Event('collection-saved'))
+        isSaving = false;
+        if(onFinishSaving.length > 0) {
+            onFinishSaving.forEach(callback => {
+                if(callback) callback();
+            });
+            onFinishSaving = [];
+        }
+    });
+}
+
+function executeOnFinishSaving(callback) {
+    if(isSaving) {
+        onFinishSaving.push(callback);
+    } else {
+        callback();
+    }
 }
 
 function refreshSoundPaths() {
@@ -184,7 +210,7 @@ function onReplacedSoundFilePath(e, data) {
         const sound = store.find(s => s.id == data.id);
         if(sound) {
             soundAPI = sound.api;
-            sound.data.path.absolute = data.path;
+            sound.data.sources[0].absolutePath = data.path;
         }
         return store;
     });
@@ -214,6 +240,8 @@ function onDocumentDrop(event) {
 /************* EXPORT  ****************/
 
 export default {
+    isSaving,
+    executeOnFinishSaving,
     onAppMount,
     onAppDestroy,
     openCollection,

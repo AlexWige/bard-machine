@@ -65,7 +65,7 @@ export function getContextMenuOptions(nodes, soundAPI) {
         });
     }
 
-    if(!soundAPI.getData().missingFile) { 
+    if(!soundAPI.isMissingFile()) { 
         options.push({ 
             id: 'stop-sound-block',
             multiple: 'Stop sounds',

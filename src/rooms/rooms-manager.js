@@ -40,6 +40,9 @@ export function createRoom(name) {
 }
 
 export function removeRoom(id) {
+    // Back to main if active room deleted
+    if(getActiveRoomID() == id) setRoomActive(0);
+    // Remove all traces of room
     roomsStore.update(store => {
         store = store.filter(r => r.id != id);
         return store;

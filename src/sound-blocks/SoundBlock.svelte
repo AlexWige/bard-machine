@@ -41,6 +41,7 @@
         getNode: () => dom.soundBlock,
         getID: () => id,
         getData: () => soundData,
+        isMissingFile: () => missing,
         isPlaying: () => isPlaying,
         setPlaying: (play) => { isPlaying = play; },
         play: () => { isPlaying = true; },

@@ -28,14 +28,18 @@
     });
 
     function onClickTitle() {
-        collectionLoader.saveCollection();
-        collectionLoader.closeCollection();
-        onHomeScreen.set(true)
+        collectionLoader.saveCollection(() => {
+            collectionLoader.closeCollection();
+            onHomeScreen.set(true)
+        });
     }
 
     function onCloseButton(e) {
+        collectionLoader.saveCollection(closeWindow);
+    }
+
+    function closeWindow() {
         ipcRenderer.send('close-window');
-        collectionLoader.saveCollection();
     }
 </script>
 
@@ -65,6 +69,7 @@
         height: var(--barHeight, 25px);
         background-color: rgba(0, 0, 0, 0.4);
         -webkit-user-select: none;
+        user-select: none;
         -webkit-app-region: drag;
         
         #home-button {

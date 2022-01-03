@@ -170,12 +170,12 @@
                                 return store;
                             });
                             modal.hide();
+                            collectionLoader.saveCollection();
                         }}
                     ],
                     { value: name, placeHolder: 'Enter name...' }
                 );
-            },
-            saveAfter: true
+            }
         });
 
         return options;

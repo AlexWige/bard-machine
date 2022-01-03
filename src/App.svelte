@@ -29,12 +29,6 @@
         roomsManager.onAppMount();
         ipcRenderer.send('app-mounted');
 
-        // Autosave collection every 30s
-        saveInterval = setInterval(() => {
-            if(collectionPath.get() != '' && !onHomeScreen)
-                collectionLoader.saveCollection();
-        }, 30000);
-
         tippy.setDefaultProps({ delay: [1000, 0], touch: false });
 
         // // **** TEST BUTTON
@@ -46,8 +40,8 @@
         //     })
         // });
 
-        // **** ON DEV
-        // collectionLoader.openCollection('C:/Users/Alex/Desktop/tests.bmsounds');
+        // // **** ON DEV
+        // collectionLoader.openCollection('C:/Users/Alex/Desktop/test.bmsounds');
         // $onHomeScreen = false;
     });
 
