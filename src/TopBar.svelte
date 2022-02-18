@@ -49,13 +49,13 @@
         <img src="{hoveringHomeButton ? 'icon_color_1.svg' : 'icon_grey_1.svg'}" id="icon" alt="icon"> <div id="title">Bard Machine</div>
     </div>
     <div id="command-buttons">
-        <div class="button close" on:pointerup="{onCloseButton}" >
+        <div class="button close" on:click="{onCloseButton}" >
             <img src="top-bar/title-bar-btn-03-close.svg" alt="Close window">
         </div>
-        <div class="button" on:pointerup="{(e) => ipcRenderer.send('maximize-window')}" >
+        <div class="button" on:click="{(e) => ipcRenderer.send('maximize-window')}" >
             <img src="top-bar/title-bar-btn-02{maximizedWindow ? 'b' : ''}-enlarge.svg" alt="Maximize window">
         </div>
-        <div class="button" on:pointerup="{(e) => ipcRenderer.send('minimize-window')}" >
+        <div class="button" on:click="{(e) => ipcRenderer.send('minimize-window')}" >
             <img src="top-bar/title-bar-btn-01-reduce.svg" alt="Minimize window">
         </div>
     </div>
