@@ -38,7 +38,8 @@ export class SoundDataSource
     }
 
     processTitle(_path) {
-        var parts = _path.split('\\');
+        console.log(_path);
+        var parts = _path.split(/\/|\\/gm);
         var title = parts[parts.length - 1];
         title = title.substring(0, title.indexOf('.'));
         title = title.replace(/_/g, ' ');

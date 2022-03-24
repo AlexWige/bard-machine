@@ -95,7 +95,7 @@ function onAppReady() {
         dialogOpened = true;
         dialog.showOpenDialog(window, { 
             title: 'Open Bard Machine Sounds', 
-            properties: ['multiSelections'], 
+            properties: ['openFile', 'multiSelections'], 
             filters: [
                 {
                     name: "sounds",
@@ -138,7 +138,8 @@ function onAppReady() {
         if(dialogOpened) return;
         dialogOpened = true;
         dialog.showOpenDialog(window, { 
-            title: 'Open Bard Machine Sounds', 
+            title: 'Open Bard Machine Sounds',
+            properties: ['openFile'],
             filters: [
                 {
                     name: "sounds",
@@ -164,6 +165,7 @@ function onOpenFile() {
     if (process.platform == 'win32' && openFilePath) {
         window.webContents.send("collection-open-path-selected", openFilePath);
     }
+    //window.webContents.openDevTools();
 }
 
 function updateMaximizeButton(window) {

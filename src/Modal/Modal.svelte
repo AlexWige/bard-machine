@@ -3,7 +3,7 @@
     import ModalOption from "./ModalOption.svelte";
     import ModalInput from "./ModalInput.svelte";
     import { tick, onMount, onDestroy } from "svelte";
-    import * as modalManager from "./modal-manager";
+    import { modal, registerModalAPI } from "./modal-manager";
     import * as hotkeyManager from "../hotkeys/hotkey-manager";
 
     $: style = `--bgCache: ${globalStyles.bg.darken(0.5).fade(0.4)};`
@@ -34,7 +34,7 @@
     };
 
     onMount(async () => {
-        modalManager.registerModalAPI(api);
+        registerModalAPI(api);
     });
 
     export function hide() {

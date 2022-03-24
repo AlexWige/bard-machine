@@ -16,6 +16,7 @@
     import tippy from "tippy.js";
     import soundStore from "./sound-blocks/sound-store";
     import PlaylistEditorWindow from "./playlists/PlaylistEditorWindow.svelte";
+    import { modal } from "./modal/modal-manager";
     import roomsStore from "./rooms/rooms-store";
     const { ipcRenderer } = window.require('electron');
     $: style = `--bg: ${globalStyles.bg};`;
@@ -28,16 +29,16 @@
         hotkeys.onAppMount();
         roomsManager.onAppMount();
         ipcRenderer.send('app-mounted');
-
         tippy.setDefaultProps({ delay: [1000, 0], touch: false });
 
-        // // **** TEST BUTTON
+        // **** TEST BUTTON
         // window.addEventListener('keydown', e => {
         //     if(!(e.key == "t" && e.ctrlKey)) return;
-        //     soundStore.update(store => {
-        //         console.log(store);
-        //         return store;
-        //     })
+        //     // soundStore.update(store => {
+        //     //     console.log(store);
+        //     //     return store;
+        //     // })
+        //     console.log(modal);
         // });
 
         // // **** ON DEV
